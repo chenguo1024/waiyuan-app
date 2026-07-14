@@ -11,6 +11,7 @@ interface User {
   membership: 'none' | 'monthly' | 'semester'
   membershipExpireAt?: string
   freeUrgentCount: number
+  avatar?: string
 }
 
 interface AppState {
@@ -54,7 +55,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem('waiyuan_token')
     if (token) {
-      fetch(`http://localhost:3001/api/auth/user/${token}`)
+      const base = import.meta.env.VITE_API_URL || window.location.origin + '/api'
+      fetch(`${base}/auth/user/${token}`)
         .then(r => r.json())
         .then(user => {
           if (user.id) dispatch({ type: 'LOGIN', user })

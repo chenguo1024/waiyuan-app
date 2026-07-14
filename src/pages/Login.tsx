@@ -10,6 +10,7 @@ export default function Login() {
   const [mode, setMode] = useState<'code' | 'password'>('code')
   const [sending, setSending] = useState(false)
   const [codeSent, setCodeSent] = useState(false)
+  const [countdown, setCountdown] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { dispatch } = useApp()
@@ -22,7 +23,9 @@ export default function Login() {
     try {
       const res = await sendCode(phone)
       setCodeSent(true)
-      if (res.debug) setError(`验证码: ${res.debug}（开发模式）`)
+      setCountdown(60)
+      const timer = setInterval(() => setCountdown(c => { if (c <= 1) clearInterval(timer); return c - 1 }), 1000)
+      if (res.debug) setError(`验证码: ${res.debug}`)
     } catch (e: any) {
       setError(e.message)
     }
@@ -49,71 +52,60 @@ export default function Login() {
       } else {
         navigate('/home', { replace: true })
       }
-    } catch (e: any) {
-      setError(e.message)
-    }
+    } catch (e: any) { setError(e.message) }
     setLoading(false)
   }
 
   return (
-    <div className="app-container" style={{ background: 'linear-gradient(180deg, #1E88E5 0%, #1565C0 50%, #0D47A1 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 40 }}>
-      <div style={{ textAlign: 'center', marginBottom: 48 }}>
-        <div style={{ width: 80, height: 80, borderRadius: 20, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 40 }}>
-          🏛️
-        </div>
-        <h1 style={{ color: '#fff', fontSize: 24, fontWeight: 700, marginBottom: 4 }}>外院一站式服务平台</h1>
-        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>外交学院校内综合服务</p>
-      </div>
-
-      <div style={{ width: '100%', background: 'rgba(255,255,255,0.95)', borderRadius: 16, padding: 24 }}>
-        <div style={{ display: 'flex', marginBottom: 20, background: 'var(--bg)', borderRadius: 10, padding: 3 }}>
-          {[{ key: 'code', label: '验证码登录' }, { key: 'password', label: '密码登录' }].map(m => (
-            <button key={m.key} onClick={() => setMode(m.key as any)}
-              style={{ flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 13, fontWeight: 600,
-                background: mode === m.key ? '#fff' : 'transparent', color: mode === m.key ? 'var(--primary)' : 'var(--text-secondary)',
-                boxShadow: mode === m.key ? '0 2px 8px rgba(0,0,0,0.08)' : 'none' }}>
-              {m.label}
-            </button>
-          ))}
+    <div className="auth-page">
+      <div className="auth-bg" />
+      <div className="auth-card">
+        <div className="auth-logo">
+          <div className="auth-logo-icon">🏛️</div>
+          <h1>外院一站式</h1>
+          <p>外交学院校内综合服务</p>
         </div>
 
-        {error && <p style={{ color: error.includes('验证码:') ? 'var(--text-light)' : 'var(--danger)', fontSize: 12, marginBottom: 8, textAlign: 'center' }}>{error}</p>}
+        <div className="auth-tabs">
+          <button className={`auth-tab ${mode === 'code' ? 'active' : ''}`} onClick={() => setMode('code')}>验证码登录</button>
+          <button className={`auth-tab ${mode === 'password' ? 'active' : ''}`} onClick={() => setMode('password')}>密码登录</button>
+        </div>
 
-        <div style={{ marginBottom: 12 }}>
-          <input type="tel" placeholder="手机号" value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
-            style={{ width: '100%', padding: '14px 16px', borderRadius: 10, background: 'var(--bg)', fontSize: 15 }} />
+        {error && <p className={`auth-error ${error.includes('验证码:') ? 'debug' : ''}`}>{error}</p>}
+
+        <div className="auth-input-group">
+          <span className="auth-input-icon">📱</span>
+          <input type="tel" placeholder="手机号" value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))} />
         </div>
 
         {mode === 'code' ? (
-          <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-            <input type="text" placeholder="验证码" value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              style={{ flex: 1, padding: '14px 16px', borderRadius: 10, background: 'var(--bg)', fontSize: 15 }} />
-            <button onClick={handleSendCode} disabled={sending}
-              style={{ padding: '0 16px', borderRadius: 10, background: codeSent ? 'var(--bg)' : 'var(--primary)', color: codeSent ? 'var(--text-secondary)' : '#fff', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>
-              {sending ? '发送中' : codeSent ? '重新发送' : '获取验证码'}
+          <div className="auth-code-row">
+            <div className="auth-input-group" style={{ flex: 1 }}>
+              <span className="auth-input-icon">✉️</span>
+              <input type="text" placeholder="验证码" value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} />
+            </div>
+            <button className="auth-code-btn" onClick={handleSendCode} disabled={sending || countdown > 0}>
+              {countdown > 0 ? `${countdown}s` : codeSent ? '重新发送' : '获取验证码'}
             </button>
           </div>
         ) : (
-          <div style={{ marginBottom: 20 }}>
-            <input type="password" placeholder="密码" value={password} onChange={e => setPassword(e.target.value)}
-              style={{ width: '100%', padding: '14px 16px', borderRadius: 10, background: 'var(--bg)', fontSize: 15 }} />
+          <div className="auth-input-group">
+            <span className="auth-input-icon">🔒</span>
+            <input type="password" placeholder="密码" value={password} onChange={e => setPassword(e.target.value)} />
           </div>
         )}
 
-        <button onClick={handleLogin} disabled={loading}
-          style={{ width: '100%', padding: '14px 0', borderRadius: 10, background: 'var(--primary)', color: '#fff', fontSize: 16, fontWeight: 700, boxShadow: '0 4px 15px rgba(30,136,229,0.3)' }}>
-          {loading ? '登录中...' : '登录'}
+        <button className="auth-submit" onClick={handleLogin} disabled={loading}>
+          {loading ? <span className="auth-loading" /> : '登录'}
         </button>
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 16 }}>
-          <Link to="/register" style={{ color: 'var(--primary)', fontSize: 13 }}>注册账号</Link>
-          <span style={{ color: 'var(--text-light)', fontSize: 13 }}>|</span>
-          <button onClick={() => navigate('/register')} style={{ color: 'var(--primary)', fontSize: 13, background: 'none' }}>忘记密码</button>
+        <div className="auth-links">
+          <Link to="/register">注册账号</Link>
+          <span className="auth-divider">|</span>
+          <button onClick={() => navigate('/register')}>忘记密码</button>
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-light)', marginTop: 12 }}>
-          登录即代表同意《用户协议》和《隐私政策》
-        </p>
+        <p className="auth-agreement">登录即代表同意《用户协议》和《隐私政策》</p>
       </div>
     </div>
   )

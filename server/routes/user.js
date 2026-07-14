@@ -5,10 +5,17 @@ import db from '../db.js'
 const router = Router()
 
 router.put('/profile', (req, res) => {
-  const { userId, name } = req.body
+  const { userId, name, avatar } = req.body
   if (!userId) return res.status(400).json({ error: '缺少用户ID' })
-  db.prepare('UPDATE users SET name = ? WHERE id = ?').run(name, userId)
-  res.json({ success: true })
+  if (name) db.prepare('UPDATE users SET name = ? WHERE id = ?').run(name, userId)
+  if (avatar !== undefined) db.prepare('UPDATE users SET avatar = ? WHERE id = ?').run(avatar, userId)
+  const user = db.prepare('SELECT id, phone, name, student_id, credit_score, coin_balance, membership, membership_expire_at, free_urgent_count, avatar FROM users WHERE id = ?').get(userId)
+  res.json({ success: true, user: user ? {
+    id: user.id, phone: user.phone, name: user.name, studentId: user.student_id,
+    creditScore: user.credit_score, coinBalance: user.coin_balance,
+    membership: user.membership, membershipExpireAt: user.membership_expire_at,
+    freeUrgentCount: user.free_urgent_count, avatar: user.avatar,
+  } : null })
 })
 
 router.get('/:id/transactions', (req, res) => {

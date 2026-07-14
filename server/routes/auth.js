@@ -69,6 +69,7 @@ router.post('/register', (req, res) => {
       id: user.id, phone: user.phone, name: user.name, studentId: user.student_id,
       creditScore: user.credit_score, coinBalance: user.coin_balance,
       membership: user.membership, freeUrgentCount: user.free_urgent_count,
+      avatar: user.avatar,
     },
     token: id,
   })
@@ -92,7 +93,7 @@ router.post('/login', (req, res) => {
       id: user.id, phone: user.phone, name: user.name, studentId: user.student_id,
       creditScore: user.credit_score, coinBalance: user.coin_balance,
       membership: user.membership, membershipExpireAt: user.membership_expire_at,
-      freeUrgentCount: user.free_urgent_count,
+      freeUrgentCount: user.free_urgent_count, avatar: user.avatar,
     },
     token: user.id,
   })
@@ -133,7 +134,7 @@ router.post('/login-code', (req, res) => {
       id: user.id, phone: user.phone, name: user.name, studentId: user.student_id,
       creditScore: user.credit_score, coinBalance: user.coin_balance,
       membership: user.membership, membershipExpireAt: user.membership_expire_at,
-      freeUrgentCount: user.free_urgent_count,
+      freeUrgentCount: user.free_urgent_count, avatar: user.avatar,
     },
     token: user.id,
   })
@@ -164,7 +165,7 @@ router.get('/user/:id', (req, res) => {
     id: user.id, phone: user.phone, name: user.name, studentId: user.student_id,
     creditScore: user.credit_score, coinBalance: user.coin_balance,
     membership: user.membership, membershipExpireAt: user.membership_expire_at,
-    freeUrgentCount: user.free_urgent_count,
+    freeUrgentCount: user.free_urgent_count, avatar: user.avatar,
   })
 })
 
