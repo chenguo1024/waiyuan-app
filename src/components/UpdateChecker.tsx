@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 import downloadApk from '../plugins/apk-updater'
 
-const CURRENT_VERSION = '2.1.0'
+const CURRENT_VERSION = '2.2.0'
 
 export default function UpdateChecker() {
   const [update, setUpdate] = useState<{ version: string; apkUrl: string; updateUrl: string } | null>(null)
