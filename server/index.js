@@ -17,7 +17,7 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 app.use(cors())
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/tasks', taskRoutes)
@@ -33,5 +33,5 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ 外院一站式服务平台后端已启动: http://localhost:${PORT}`)
   console.log(`📱 API 基础路径: http://localhost:${PORT}/api`)
-  console.log('⚠️  验证码以 [SMS DEBUG] 形式输出在控制台（未配置阿里云短信时）')
+  console.log('⚠️  验证码以 [SMS DEBUG] 形式输出在控制台（未配置短信宝时）')
 })
