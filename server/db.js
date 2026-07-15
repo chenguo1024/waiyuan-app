@@ -1,9 +1,12 @@
 ﻿import Database from 'better-sqlite3'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import { existsSync, mkdirSync } from 'fs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const db = new Database(join(__dirname, 'waiyuan.db'))
+const dataDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.env.DATA_DIR || __dirname
+if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true })
+const db = new Database(join(dataDir, 'waiyuan.db'))
 
 db.pragma('journal_mode = WAL')
 
