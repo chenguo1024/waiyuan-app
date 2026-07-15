@@ -19,6 +19,8 @@ export default async function sendVerifyEmail(email, code) {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
       })
     }
     try {
@@ -32,7 +34,6 @@ export default async function sendVerifyEmail(email, code) {
       return { success: true }
     } catch (err) {
       console.error('Email send error:', err.message)
-      return { success: false, error: err.message }
     }
   }
 

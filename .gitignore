@@ -4,4 +4,5 @@ android
 ios
 *.db
 .env.local
+.env
 server/.env
