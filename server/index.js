@@ -33,14 +33,10 @@ app.get('/api/health', (req, res) => {
 })
 
 app.get('/api/version', (req, res) => {
-  res.json({ version: '2.1.0', updateUrl: 'https://github.com/chenguo1024/waiyuan-app/releases' })
-})
-
-app.get('/api/debug-env', (req, res) => {
   res.json({
-    smtp_host: process.env.SMTP_HOST ? 'set' : 'not set',
-    smtp_user: process.env.SMTP_USER ? 'set' : 'not set',
-    node_env: process.env.NODE_ENV,
+    version: '2.1.0',
+    updateUrl: 'https://github.com/chenguo1024/waiyuan-app/releases',
+    smtp: process.env.SMTP_HOST ? 'configured' : 'not set',
   })
 })
 
