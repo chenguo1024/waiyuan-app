@@ -36,6 +36,14 @@ app.get('/api/version', (req, res) => {
   res.json({ version: '2.1.0', updateUrl: 'https://github.com/chenguo1024/waiyuan-app/releases' })
 })
 
+app.get('/api/debug-env', (req, res) => {
+  res.json({
+    smtp_host: process.env.SMTP_HOST ? 'set' : 'not set',
+    smtp_user: process.env.SMTP_USER ? 'set' : 'not set',
+    node_env: process.env.NODE_ENV,
+  })
+})
+
 app.listen(PORT, () => {
   console.log(`✅ 外院一站式服务平台后端已启动: http://localhost:${PORT}`)
   console.log(`📱 API 基础路径: http://localhost:${PORT}/api`)
