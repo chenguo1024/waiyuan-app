@@ -1,54 +1,32 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp, saveToken } from '../store'
-import { sendCode, register } from '../api/auth'
+import { register } from '../api/auth'
 
 export default function Register() {
-  const [step, setStep] = useState(1)
   const [phone, setPhone] = useState('')
-  const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [studentId, setStudentId] = useState('')
   const [idCard, setIdCard] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [codeSent, setCodeSent] = useState(false)
-  const [countdown, setCountdown] = useState(0)
+  const [done, setDone] = useState(false)
   const { dispatch } = useApp()
   const navigate = useNavigate()
 
-  const handleSendCode = async () => {
-    if (phone.length < 11) { setError('请输入完整手机号'); return }
-    setLoading(true)
-    setError('')
-    try {
-      const res = await sendCode(phone)
-      setCodeSent(true)
-      setCountdown(60)
-      const timer = setInterval(() => setCountdown(c => { if (c <= 1) clearInterval(timer); return c - 1 }), 1000)
-      if (res.debug) setError(`验证码: ${res.debug}`)
-    } catch (e: any) { setError(e.message) }
-    setLoading(false)
-  }
-
-  const handleVerifyCode = () => {
-    if (!code) { setError('请输入验证码'); return }
-    setError('')
-    setStep(2)
-  }
-
   const handleRegister = async () => {
+    if (phone.length < 11) { setError('请输入手机号'); return }
+    if (password.length < 6) { setError('密码至少6位'); return }
     if (!name.trim()) { setError('请输入真实姓名'); return }
     if (!studentId.trim()) { setError('请输入学号'); return }
-    if (password.length < 6) { setError('密码至少6位'); return }
     setLoading(true)
     setError('')
     try {
-      const res = await register({ phone, code, password, name: name.trim(), studentId: studentId.trim(), idCard: idCard.trim() })
+      const res = await register({ phone, password, name: name.trim(), studentId: studentId.trim(), idCard: idCard.trim() })
       saveToken(res.token)
       dispatch({ type: 'LOGIN', user: res.user })
-      setStep(3)
+      setDone(true)
       setTimeout(() => navigate('/home', { replace: true }), 1500)
     } catch (e: any) { setError(e.message) }
     setLoading(false)
@@ -61,38 +39,22 @@ export default function Register() {
         <div className="auth-logo">
           <div className="auth-logo-icon">📝</div>
           <h1>注册账号</h1>
-          <p>步骤 {step}/3</p>
         </div>
 
-        <div className="auth-steps">
-          {[1, 2, 3].map(s => (
-            <div key={s} className={`auth-step ${s <= step ? 'active' : ''}`} />
-          ))}
-        </div>
+        {error && <p className="auth-error">{error}</p>}
 
-        {error && <p className={`auth-error ${error.includes('验证码:') ? 'debug' : ''}`}>{error}</p>}
-
-        {step === 1 && (
+        {done ? (
+          <div className="auth-success">
+            <div className="auth-success-icon">🎉</div>
+            <h3>注册成功！</h3>
+            <p>正在跳转至首页...</p>
+          </div>
+        ) : (
           <>
             <div className="auth-input-group">
               <span className="auth-input-icon">📱</span>
               <input type="tel" placeholder="手机号" value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))} />
             </div>
-            <div className="auth-code-row">
-              <div className="auth-input-group" style={{ flex: 1 }}>
-                <span className="auth-input-icon">✉️</span>
-                <input type="text" placeholder="验证码" value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} />
-              </div>
-              <button className="auth-code-btn" onClick={handleSendCode} disabled={loading || countdown > 0}>
-                {countdown > 0 ? `${countdown}s` : codeSent ? '重新发送' : '获取验证码'}
-              </button>
-            </div>
-            <button className="auth-submit" onClick={handleVerifyCode} disabled={!code}>下一步</button>
-          </>
-        )}
-
-        {step === 2 && (
-          <>
             <div className="auth-input-group">
               <span className="auth-input-icon">👤</span>
               <input type="text" placeholder="真实姓名" value={name} onChange={e => setName(e.target.value)} />
@@ -110,22 +72,14 @@ export default function Register() {
               <input type="password" placeholder="设置密码（至少6位）" value={password} onChange={e => setPassword(e.target.value)} />
             </div>
             <button className="auth-submit" onClick={handleRegister} disabled={loading}>
-              {loading ? <span className="auth-loading" /> : '完成注册'}
+              {loading ? <span className="auth-loading" /> : '注册'}
             </button>
+
+            <div className="auth-links" style={{ marginTop: 16 }}>
+              <button onClick={() => navigate('/login')}>已有账号？去登录</button>
+            </div>
           </>
         )}
-
-        {step === 3 && (
-          <div className="auth-success">
-            <div className="auth-success-icon">🎉</div>
-            <h3>注册成功！</h3>
-            <p>正在跳转至首页...</p>
-          </div>
-        )}
-
-        <div className="auth-links" style={{ marginTop: 16 }}>
-          <button onClick={() => navigate('/login')}>已有账号？去登录</button>
-        </div>
       </div>
     </div>
   )

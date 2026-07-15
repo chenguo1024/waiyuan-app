@@ -62,20 +62,22 @@ router.post('/send-email-code', async (req, res) => {
 router.post('/register', (req, res) => {
   const { email, code, password, name, studentId, idCard, phone } = req.body
 
-  if ((!email && !phone) || !code || !password) {
-    return res.status(400).json({ error: '邮箱/手机号、验证码和密码为必填' })
+  if ((!email && !phone) || !password) {
+    return res.status(400).json({ error: '手机号/邮箱和密码为必填' })
   }
 
-  if (email) {
-    const record = db.prepare(
-      "SELECT * FROM email_codes WHERE email = ? AND code = ? AND datetime(created_at) > datetime('now', '-10 minutes')"
-    ).get(email, code)
-    if (!record) return res.status(400).json({ error: '验证码错误或已过期' })
-  } else {
-    const record = db.prepare(
-      "SELECT * FROM sms_codes WHERE phone = ? AND code = ? AND datetime(created_at) > datetime('now', '-10 minutes')"
-    ).get(phone, code)
-    if (!record) return res.status(400).json({ error: '验证码错误或已过期' })
+  if (code) {
+    if (email) {
+      const record = db.prepare(
+        "SELECT * FROM email_codes WHERE email = ? AND code = ? AND datetime(created_at) > datetime('now', '-10 minutes')"
+      ).get(email, code)
+      if (!record) return res.status(400).json({ error: '验证码错误或已过期' })
+    } else {
+      const record = db.prepare(
+        "SELECT * FROM sms_codes WHERE phone = ? AND code = ? AND datetime(created_at) > datetime('now', '-10 minutes')"
+      ).get(phone, code)
+      if (!record) return res.status(400).json({ error: '验证码错误或已过期' })
+    }
   }
 
   const existing = email
@@ -93,8 +95,10 @@ router.post('/register', (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, 10, 0)
   `).run(id, email || '', phone || '', displayName, studentId || '', idCard || '', passwordHash)
 
-  if (email) db.prepare('DELETE FROM email_codes WHERE email = ?').run(email)
-  else db.prepare('DELETE FROM sms_codes WHERE phone = ?').run(phone)
+  if (code) {
+    if (email) db.prepare('DELETE FROM email_codes WHERE email = ?').run(email)
+    else db.prepare('DELETE FROM sms_codes WHERE phone = ?').run(phone)
+  }
 
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id)
   res.json({ success: true, user: formatUser(user), token: id })

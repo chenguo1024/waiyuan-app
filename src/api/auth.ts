@@ -8,7 +8,7 @@ export async function sendEmailCode(email: string) {
   return api.post('/auth/send-email-code', { email })
 }
 
-export async function register(params: { email?: string; phone?: string; code: string; password: string; name?: string; studentId?: string; idCard?: string }) {
+export async function register(params: { email?: string; phone?: string; code?: string; password: string; name?: string; studentId?: string; idCard?: string }) {
   return api.post('/auth/register', params)
 }
 
