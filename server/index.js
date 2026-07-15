@@ -35,8 +35,8 @@ app.get('/api/health', (req, res) => {
 app.get('/api/version', (req, res) => {
   res.json({
     version: '2.1.0',
+    apkUrl: 'https://waiyuan-app-production.up.railway.app/api/download-apk',
     updateUrl: 'https://github.com/chenguo1024/waiyuan-app/releases',
-    smtp: process.env.SMTP_HOST ? 'configured' : 'not set',
   })
 })
 

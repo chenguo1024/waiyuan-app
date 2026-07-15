@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
+import downloadApk from '../plugins/apk-updater'
 
 const CURRENT_VERSION = '2.1.0'
 
 export default function UpdateChecker() {
-  const [update, setUpdate] = useState<{ version: string; url: string } | null>(null)
+  const [update, setUpdate] = useState<{ version: string; apkUrl: string; updateUrl: string } | null>(null)
   const [dismissed, setDismissed] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
+    if (dismissed) return
     const checked = sessionStorage.getItem('update_checked')
     if (checked) return
 
@@ -20,7 +24,23 @@ export default function UpdateChecker() {
         sessionStorage.setItem('update_checked', '1')
       })
       .catch(() => {})
-  }, [])
+  }, [dismissed])
+
+  const handleUpdate = async () => {
+    if (!update) return
+    if (Capacitor.isNativePlatform() && update.apkUrl) {
+      setDownloading(true)
+      try {
+        await downloadApk(update.apkUrl)
+      } catch (e: any) {
+        console.error('Auto update failed, opening browser:', e.message)
+        window.open(update.updateUrl, '_blank')
+      }
+      setDownloading(false)
+    } else {
+      window.open(update.updateUrl, '_blank')
+    }
+  }
 
   if (!update || dismissed) return null
 
@@ -32,17 +52,22 @@ export default function UpdateChecker() {
       animation: 'fadeIn 0.3s ease',
     }}>
       <p style={{ fontSize: 13, marginBottom: 8 }}>
-        新版本 v{update.version} 可用，请更新到最新版
+        新版本 v{update.version} 可用
       </p>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
         <button
-          onClick={() => window.open(update.url, '_blank')}
-          style={{ padding: '6px 16px', borderRadius: 8, background: 'var(--primary)', color: '#fff', fontSize: 12 }}
-        >更新</button>
+          onClick={handleUpdate}
+          disabled={downloading}
+          style={{
+            padding: '6px 16px', borderRadius: 8,
+            background: downloading ? '#666' : 'var(--primary)',
+            color: '#fff', fontSize: 12,
+          }}
+        >{downloading ? '下载中...' : '更新'}</button>
         <button
           onClick={() => setDismissed(true)}
           style={{ padding: '6px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.2)', color: '#fff', fontSize: 12 }}
-        >忽略</button>
+        >稍后</button>
       </div>
     </div>
   )
