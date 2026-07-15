@@ -1,50 +1,167 @@
 # 外交学院一站式服务平台
 
-外交学院校内综合服务移动应用，提供跑腿任务、二手交易、学习资源共享、拼车出行、帮帮币、聊天等功能。
+外交学院校内综合服务移动应用，覆盖跑腿任务、二手交易、学习资源共享、拼车出行、帮帮币系统、即时聊天等校园生活全场景。
+
+## 功能一览
+
+| 模块 | 功能 |
+|------|------|
+| **跑腿任务** | 发布任务、接单、确认完成、紧急任务加价 |
+| **二手交易** | 商品发布、浏览、购买、按分类筛选 |
+| **学习资源** | 资料/笔记/书籍共享、按类型分类 |
+| **拼车出行** | 发布拼车、查看可用座位、联系方式 |
+| **帮帮币** | 充值、消费、每日签到（+1 币）、交易记录 |
+| **会员体系** | 月卡/季卡/年卡、免费紧急任务额度 |
+| **聊天** | 会话列表、实时消息（3 秒轮询）、从任务/商品页面发起 |
+| **个人主页** | 头像上传、信誉分、交易记录、通知中心 |
+| **个人资料** | 昵称、性别、专业、QQ、出生年月编辑 |
+| **信息流首页** | 跑腿+二手混排时间线、顶部广告轮播 |
+| **启动画面** | 校徽 + 校训（站稳立场·掌握政策·熟悉业务·严守纪律）渐变消失 |
+| **自动更新** | 启动检测服务端版本 → 弹窗提示 → 原生下载安装 APK |
 
 ## 技术栈
 
-- **前端**: React 19 + TypeScript + Vite 8
-- **后端**: Node.js + Express + SQLite (better-sqlite3)
-- **原生打包**: Capacitor 6 (Android)
-- **部署**: Railway (后端自动部署)
+### 前端
 
-## 功能
+| 技术 | 用途 |
+|------|------|
+| **React 19** | UI 框架 |
+| **TypeScript** | 类型安全 |
+| **Vite 8** | 构建工具 |
+| **React Router** | 页面路由 |
+| **Capacitor 6** | 原生容器（Android） |
 
-- 手机号 + 密码注册/登录（无验证码）
-- 信息流首页（跑腿 + 二手混排）
-- 跑腿任务发布、接单、确认
-- 二手商品发布、购买
-- 学习资源共享
-- 拼车出行
-- 帮帮币充值、会员购买
-- 每日签到（+1 帮帮币）
-- 聊天（会话列表 + 实时消息，3秒轮询）
-- 个人主页（头像上传、性别、专业、QQ、生日编辑）
-- 顶部广告轮播
-- 启动画面（校徽 + 校训）
-- 原生 APK 自动更新（检测版本 → 下载 → 安装）
+### 后端
+
+| 技术 | 用途 |
+|------|------|
+| **Node.js** | 运行时 |
+| **Express** | HTTP 框架 |
+| **better-sqlite3** | 数据库（同步 SQLite） |
+| **uuid** | 用户/任务 ID 生成 |
+
+### 原生（Android）
+
+| 文件 | 用途 |
+|------|------|
+| `ApkUpdaterPlugin.java` | 原生 APK 下载 + 安装（DownloadManager + FileProvider） |
+| `AndroidManifest.xml` | 权限声明、Activity 配置 |
+
+### 部署
+
+| 平台 | 组件 |
+|------|------|
+| **Railway** | 后端 Express 服务（自动部署） |
+| **GitHub Releases** | APK 分发（自动更新下载源） |
+
+## 项目结构
+
+```
+D:\waiyuan-app\
+├── src\                          # 前端源码
+│   ├── api\                      # API 客户端
+│   │   ├── client.ts             #   请求封装（fetch + token + 错误处理）
+│   │   ├── auth.ts               #   注册、登录、验证码
+│   │   ├── tasks.ts              #   跑腿任务 CRUD
+│   │   ├── products.ts           #   二手商品 CRUD
+│   │   ├── study.ts              #   学习资源 CRUD
+│   │   ├── carpool.ts            #   拼车 CRUD
+│   │   ├── user.ts               #   用户信息、签到、订单、通知
+│   │   ├── chat.ts               #   会话、消息
+│   │   └── orders.ts             #   订单
+│   ├── components\               # 通用组件
+│   │   ├── Layout.tsx            #   全局布局（顶栏 + 广告 + 底部导航 + 更新提示）
+│   │   ├── BottomNav.tsx         #   底部导航栏（发布按钮居中悬浮）
+│   │   ├── TaskCard.tsx          #   跑腿任务卡片
+│   │   ├── ProductCard.tsx       #   二手商品卡片
+│   │   ├── SplashScreen.tsx      #   启动画面组件
+│   │   └── UpdateChecker.tsx     #   版本检测 + 更新弹窗
+│   ├── pages\                    # 页面
+│   │   ├── Home.tsx              #   首页（信息流 + 签到按钮）
+│   │   ├── Login.tsx             #   手机号 + 密码登录
+│   │   ├── Register.tsx          #   手机号 + 密码注册（姓名、学号、身份证）
+│   │   ├── Errands.tsx           #   跑腿任务列表
+│   │   ├── Market.tsx            #   二手集市
+│   │   ├── Study.tsx             #   学习资源
+│   │   ├── Carpool.tsx           #   拼车列表
+│   │   ├── Publish.tsx           #   发布页面（任务/商品/学习/拼车）
+│   │   ├── Profile.tsx           #   个人主页 + 资料编辑 + 设置入口
+│   │   ├── Coins.tsx             #   帮帮币充值 + 会员购买
+│   │   ├── Notifications.tsx     #   通知列表
+│   │   ├── ChatList.tsx          #   会话列表
+│   │   ├── ChatRoom.tsx          #   聊天室
+│   │   ├── About.tsx             #   关于我们
+│   │   └── Orders.tsx            #   我的订单
+│   ├── plugins\                  # Capacitor 原生插件接口
+│   │   └── apk-updater.ts        #   APK 更新 TypeScript 接口
+│   ├── store.tsx                 # 全局状态（Context + Reducer）
+│   ├── App.tsx                   # 根组件（路由）
+│   └── main.tsx                  # 入口
+├── server\                       # 后端源码
+│   ├── routes\                   # 路由模块
+│   │   ├── auth.js               #   注册、登录、验证码、绑卡
+│   │   ├── tasks.js              #   跑腿任务 CRUD + 接单
+│   │   ├── products.js           #   二手商品 CRUD
+│   │   ├── study.js              #   学习资源 CRUD
+│   │   ├── carpool.js            #   拼车 CRUD
+│   │   ├── user.js               #   用户信息、签到、充值、会员、订单、通知
+│   │   ├── chat.js               #   会话列表、消息发送/拉取
+│   │   └── orders.js             #   订单创建/查询
+│   ├── db.js                     # SQLite 数据库初始化（所有表 DDL）
+│   ├── index.js                  # Express 入口（CORS、路由挂载、version API）
+│   ├── sms.js                    # 短信发送（阿里云 SMS SDK）
+│   └── email.js                  # 邮件发送（预留，当前 DEBUG 模式）
+├── android\                      # Capacitor Android 原生工程
+│   ├── app\src\main\java\com\waiyuan\app\
+│   │   ├── MainActivity.java     #   Android 入口 Activity
+│   │   ├── ApkUpdaterPlugin.java #   APK 下载 + 安装插件
+│   │   └── res\xml\file_paths.xml#   FileProvider 路径配置
+│   ├── app\build.gradle          #   AGP 9.0.0 / versionName 2.3.0
+│   ├── build.gradle              #   顶层（AGP + Google Services）
+│   └── gradle\wrapper\           #   Gradle 9.6.1 wrapper
+├── package.json                  # v2.3.0
+└── vite.config.ts                # Vite 配置（SPA fallback）
+```
 
 ## 本地开发
 
+### 前置要求
+
+- Node.js >= 18
+- JDK 17+（Android 构建）
+- Android SDK（构建 APK）
+
+### 启动后端
+
 ```bash
-# 安装依赖
+cd server
 npm install
-cd server && npm install
+node index.js
+```
 
-# 启动后端（端口 3001）
-cd server && node index.js
+后端启动在 `http://localhost:3001`，API 基础路径 `/api`。
 
-# 启动前端（端口 5173）
+### 启动前端
+
+```bash
+npm install
 npm run dev
 ```
+
+前端开发服务器在 `http://localhost:5173`，通过 `VITE_API_URL` 环境变量指定后端地址（默认 `http://localhost:3001/api`）。
 
 ## 构建 APK
 
 ```bash
+# 1. 构建前端产物
 npm run build
+
+# 2. 同步到 Android 工程
 npx cap sync android
-cd android && ./gradlew assembleDebug
+
+# 3. 编译 APK
+cd android
+./gradlew assembleDebug
 ```
 
 APK 位于 `android/app/build/outputs/apk/debug/app-debug.apk`。
@@ -53,34 +170,82 @@ APK 位于 `android/app/build/outputs/apk/debug/app-debug.apk`。
 
 ### 后端（Railway）
 
-1. 推送代码到 GitHub main 分支，Railway 自动部署
-2. 数据库使用 SQLite，需设置 Railway Volume 持久化：
-   - 创建 Volume，挂载路径 `/data`
-   - 添加环境变量 `DATA_DIR=/data`
-3. 前端 API 地址通过 `VITE_API_URL` 环境变量配置
+1. 推送代码到 GitHub main 分支
+2. Railway 自动检测 `server/package.json` 并部署
+3. 数据库持久化（避免部署后数据丢失）：
+   - 在 Railway 项目下创建 **Volume**，挂载路径 `/data`
+   - 在服务 **Variables** 中添加：`DATA_DIR=/data`
+4. 可选环境变量：
+   - `PORT`：服务端口（默认 3001）
+   - `ALIBABA_ACCESS_KEY_ID`：阿里云 SMS AccessKey
+   - `ALIBABA_ACCESS_KEY_SECRET`：阿里云 SMS AccessSecret
+   - `ALIBABA_SMS_SIGN_NAME`：短信签名
 
-### Android 更新
+### Android 自动更新流程
 
-- 服务端 `/api/version` 返回最新版本号和 APK 下载链接
-- App 启动时自动检测版本差异，弹出更新提示
-- 支持原生 DownloadManager 下载 + FileProvider 安装
+1. 构建新版本 APK
+2. 在 GitHub Releases 创建对应 tag（如 `v2.3.0`）并上传 APK
+3. 更新 `server/index.js` 中 `/api/version` 返回的版本号和 APK 下载链接
+4. 推送代码 → Railway 自动部署
+5. 用户打开 App → UpdateChecker 检测到版本差异 → 弹出更新提示 → 点击更新 → 原生下载安装
 
-## 项目结构
+### 版本号管理
 
-```
-waiyuan-app/
-├── src/              # 前端 React 源码
-│   ├── pages/        # 页面组件
-│   ├── components/   # 通用组件
-│   ├── api/          # API 客户端
-│   ├── plugins/      # Capacitor 插件接口
-│   └── store.tsx     # 全局状态
-├── server/           # 后端 Express 服务
-│   ├── routes/       # 路由
-│   ├── db.js         # SQLite 数据库
-│   └── index.js      # 入口
-├── android/          # Capacitor Android 工程
-│   └── app/src/main/java/com/waiyuan/app/
-│       └── ApkUpdaterPlugin.java  # 原生 APK 更新插件
-└── package.json      # v2.3.0
-```
+需要同步更新的地方：
+
+| 文件 | 字段 |
+|------|------|
+| `package.json` | `version` |
+| `src/components/UpdateChecker.tsx` | `CURRENT_VERSION` |
+| `server/index.js` | `/api/version` 返回的 `version` |
+| `android/app/build.gradle` | `versionName` |
+
+## API 参考
+
+### 认证
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/auth/register` | 注册（phone + password + name + studentId） |
+| POST | `/api/auth/login` | 登录（phone + password） |
+| GET | `/api/auth/user/:id` | 获取用户信息 |
+
+### 任务
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/tasks` | 任务列表 |
+| POST | `/api/tasks` | 发布任务 |
+| PUT | `/api/tasks/:id` | 更新任务状态（接单、完成） |
+
+### 聊天
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/chat/conversations/:userId` | 会话列表 |
+| POST | `/api/chat/conversations` | 创建/获取会话 |
+| GET | `/api/chat/messages/:conversationId` | 消息列表 |
+| POST | `/api/chat/messages` | 发送消息 |
+
+### 系统
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/version` | 版本信息（version + apkUrl + updateUrl） |
+| GET | `/api/health` | 健康检查 |
+
+## 常见问题
+
+**Q: 注册后登录显示"账号或密码错误"？**
+A: Railway 部署会重置 SQLite 文件，需设置 Volume 持久化（参见部署章节）。
+
+**Q: 自动更新不弹出？**
+A: 检查 App 内版本号是否低于服务端 `/api/version` 返回的版本号。版本相同不会弹出。
+
+**Q: APK 下载失败？**
+A: GitHub Releases CDN 在国内可能不稳定，可尝试切换网络或使用代理。
+
+## 关于
+
+- 开发者：陈果（中国科学技术大学）
+- 技术咨询：欢迎在 GitHub Issues 提问
