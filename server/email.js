@@ -1,10 +1,4 @@
-import dotenv from 'dotenv'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
 import nodemailer from 'nodemailer'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-dotenv.config({ path: join(__dirname, '.env') })
 
 let transporter = null
 
@@ -19,8 +13,8 @@ export default async function sendVerifyEmail(email, code) {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
-        connectionTimeout: 5000,
-        greetingTimeout: 5000,
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
       })
     }
     try {
