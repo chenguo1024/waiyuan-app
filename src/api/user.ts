@@ -1,7 +1,7 @@
 import api from './client'
 
-export async function updateProfile(userId: string, name?: string, avatar?: string) {
-  return api.put('/user/profile', { userId, name, avatar })
+export async function updateProfile(userId: string, data: { name?: string; avatar?: string; gender?: string; major?: string; qq?: string; birthday?: string }) {
+  return api.put('/user/profile', { userId, ...data })
 }
 
 export async function getTransactions(userId: string) {

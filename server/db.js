@@ -22,6 +22,10 @@ db.exec(`
     membership_expire_at TEXT,
     free_urgent_count INTEGER DEFAULT 0,
     avatar TEXT DEFAULT '',
+    gender TEXT DEFAULT '',
+    major TEXT DEFAULT '',
+    qq TEXT DEFAULT '',
+    birthday TEXT DEFAULT '',
     created_at TEXT DEFAULT (datetime('now'))
   );
 
@@ -138,6 +142,25 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
     date TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS conversations (
+    id TEXT PRIMARY KEY,
+    user1_id TEXT NOT NULL,
+    user2_id TEXT NOT NULL,
+    last_message TEXT DEFAULT '',
+    last_message_at TEXT DEFAULT (datetime('now')),
+    unread_user1 INTEGER DEFAULT 0,
+    unread_user2 INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS messages (
+    id TEXT PRIMARY KEY,
+    conversation_id TEXT NOT NULL,
+    sender_id TEXT NOT NULL,
+    content TEXT NOT NULL,
     created_at TEXT DEFAULT (datetime('now'))
   );
 `)

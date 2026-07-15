@@ -9,6 +9,7 @@ import productRoutes from './routes/products.js'
 import studyRoutes from './routes/study.js'
 import carpoolRoutes from './routes/carpool.js'
 import userRoutes from './routes/user.js'
+import chatRoutes from './routes/chat.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 dotenv.config({ path: join(__dirname, '.env') })
@@ -25,9 +26,14 @@ app.use('/api/products', productRoutes)
 app.use('/api/study', studyRoutes)
 app.use('/api/carpool', carpoolRoutes)
 app.use('/api/user', userRoutes)
+app.use('/api/chat', chatRoutes)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() })
+})
+
+app.get('/api/version', (req, res) => {
+  res.json({ version: '2.1.0', updateUrl: 'https://github.com/chenguo1024/waiyuan-app/releases' })
 })
 
 app.listen(PORT, () => {

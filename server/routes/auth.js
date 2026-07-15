@@ -11,6 +11,17 @@ function hashPassword(password) {
   return crypto.createHash('sha256').update(password + 'waiyuan_salt_2024').digest('hex')
 }
 
+function formatUser(user) {
+  return {
+    id: user.id, email: user.email, phone: user.phone, name: user.name,
+    studentId: user.student_id, creditScore: user.credit_score,
+    coinBalance: user.coin_balance, membership: user.membership,
+    membershipExpireAt: user.membership_expire_at,
+    freeUrgentCount: user.free_urgent_count, avatar: user.avatar,
+    gender: user.gender, major: user.major, qq: user.qq, birthday: user.birthday,
+  }
+}
+
 function generateCode() {
   return String(Math.floor(100000 + Math.random() * 900000))
 }
@@ -86,16 +97,7 @@ router.post('/register', (req, res) => {
   else db.prepare('DELETE FROM sms_codes WHERE phone = ?').run(phone)
 
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id)
-  res.json({
-    success: true,
-    user: {
-      id: user.id, email: user.email, phone: user.phone, name: user.name, studentId: user.student_id,
-      creditScore: user.credit_score, coinBalance: user.coin_balance,
-      membership: user.membership, freeUrgentCount: user.free_urgent_count,
-      avatar: user.avatar,
-    },
-    token: id,
-  })
+  res.json({ success: true, user: formatUser(user), token: id })
 })
 
 // 密码登录
@@ -113,16 +115,7 @@ router.post('/login', (req, res) => {
     return res.status(400).json({ error: '账号或密码错误' })
   }
 
-  res.json({
-    success: true,
-    user: {
-      id: user.id, email: user.email, phone: user.phone, name: user.name, studentId: user.student_id,
-      creditScore: user.credit_score, coinBalance: user.coin_balance,
-      membership: user.membership, membershipExpireAt: user.membership_expire_at,
-      freeUrgentCount: user.free_urgent_count, avatar: user.avatar,
-    },
-    token: user.id,
-  })
+  res.json({ success: true, user: formatUser(user), token: user.id })
 })
 
 // 验证码登录
@@ -150,16 +143,7 @@ router.post('/login-code', (req, res) => {
     }
     db.prepare('DELETE FROM email_codes WHERE email = ?').run(email)
 
-    res.json({
-      success: true,
-      user: {
-        id: user.id, email: user.email, phone: user.phone, name: user.name, studentId: user.student_id,
-        creditScore: user.credit_score, coinBalance: user.coin_balance,
-        membership: user.membership, membershipExpireAt: user.membership_expire_at,
-        freeUrgentCount: user.free_urgent_count, avatar: user.avatar,
-      },
-      token: user.id,
-    })
+    res.json({ success: true, user: formatUser(user), token: user.id })
   } else {
     const smsRecord = db.prepare(
       "SELECT * FROM sms_codes WHERE phone = ? AND code = ? AND datetime(created_at) > datetime('now', '-10 minutes')"
@@ -178,16 +162,7 @@ router.post('/login-code', (req, res) => {
     }
     db.prepare('DELETE FROM sms_codes WHERE phone = ?').run(phone)
 
-    res.json({
-      success: true,
-      user: {
-        id: user.id, email: user.email, phone: user.phone, name: user.name, studentId: user.student_id,
-        creditScore: user.credit_score, coinBalance: user.coin_balance,
-        membership: user.membership, membershipExpireAt: user.membership_expire_at,
-        freeUrgentCount: user.free_urgent_count, avatar: user.avatar,
-      },
-      token: user.id,
-    })
+    res.json({ success: true, user: formatUser(user), token: user.id })
   }
 })
 
@@ -205,16 +180,7 @@ router.post('/bind', (req, res) => {
     .run(name, studentId, idCard || user.id_card, userId)
 
   const updated = db.prepare('SELECT * FROM users WHERE id = ?').get(userId)
-  res.json({
-    success: true, message: '绑定成功',
-    user: {
-      id: updated.id, email: updated.email, phone: updated.phone, name: updated.name,
-      studentId: updated.student_id, creditScore: updated.credit_score,
-      coinBalance: updated.coin_balance, membership: updated.membership,
-      membershipExpireAt: updated.membership_expire_at,
-      freeUrgentCount: updated.free_urgent_count, avatar: updated.avatar,
-    },
-  })
+  res.json({ success: true, message: '绑定成功', user: formatUser(updated) })
 })
 
 // 获取用户信息
@@ -222,12 +188,7 @@ router.get('/user/:id', (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id)
   if (!user) return res.status(404).json({ error: '用户不存在' })
 
-  res.json({
-    id: user.id, email: user.email, phone: user.phone, name: user.name, studentId: user.student_id,
-    creditScore: user.credit_score, coinBalance: user.coin_balance,
-    membership: user.membership, membershipExpireAt: user.membership_expire_at,
-    freeUrgentCount: user.free_urgent_count, avatar: user.avatar,
-  })
+  res.json(formatUser(user))
 })
 
 export default router

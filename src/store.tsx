@@ -13,6 +13,10 @@ interface User {
   membershipExpireAt?: string
   freeUrgentCount: number
   avatar?: string
+  gender?: string
+  major?: string
+  qq?: string
+  birthday?: string
 }
 
 interface AppState {

@@ -20,7 +20,7 @@ export default function BottomNav() {
 
   return (
     <div style={{
-      position: 'fixed', bottom: 0, width: 375, height: 64,
+      position: 'fixed', bottom: 0, width: '100%', maxWidth: 375, height: 64,
       background: '#fff', display: 'flex', alignItems: 'center',
       justifyContent: 'space-around', borderTop: '1px solid var(--border)',
       zIndex: 100,
@@ -37,10 +37,11 @@ export default function BottomNav() {
                 color: '#fff', fontSize: 28, fontWeight: 300,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 boxShadow: '0 4px 15px rgba(30,136,229,0.4)',
-                marginTop: -16, transition: 'transform 0.15s',
+                marginTop: -20, transition: 'transform 0.15s', flexShrink: 0,
               }}
               onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.9)')}
               onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+              onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
             >
               +
             </button>

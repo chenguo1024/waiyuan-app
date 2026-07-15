@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AppProvider, useApp } from './store'
 import Layout from './components/Layout'
+import SplashScreen from './components/SplashScreen'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Home from './pages/Home'
@@ -15,6 +17,8 @@ import Membership from './pages/Membership'
 import CoinCenter from './pages/CoinCenter'
 import Profile from './pages/Profile'
 import Notifications from './pages/Notifications'
+import ChatList from './pages/ChatList'
+import ChatRoom from './pages/ChatRoom'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { state } = useApp()
@@ -43,6 +47,8 @@ function AppRoutes() {
           <Route path="coins" element={<CoinCenter />} />
           <Route path="profile" element={<Profile />} />
           <Route path="notifications" element={<Notifications />} />
+          <Route path="chat" element={<ChatList />} />
+          <Route path="chat/:id" element={<ChatRoom />} />
         </Route>
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
@@ -51,6 +57,12 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true)
+
+  if (showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />
+  }
+
   return (
     <AppProvider>
       <AppRoutes />

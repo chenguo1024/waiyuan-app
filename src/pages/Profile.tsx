@@ -4,6 +4,7 @@ import { useApp } from '../store'
 import { getTasks } from '../api/tasks'
 import { getProducts } from '../api/products'
 import { getOrders, getNotifications, updateProfile } from '../api/user'
+import About from './About'
 
 type ProfileTab = 'publish' | 'accept' | 'orders' | 'settings'
 
@@ -13,8 +14,8 @@ export default function Profile() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [tab, setTab] = useState<ProfileTab>('publish')
   const [toast, setToast] = useState('')
-  const [editName, setEditName] = useState(state.user?.name || '')
   const [showEdit, setShowEdit] = useState(false)
+  const [showAbout, setShowAbout] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [userTasks, setUserTasks] = useState<any[]>([])
   const [acceptedTasks, setAcceptedTasks] = useState<any[]>([])
@@ -22,6 +23,7 @@ export default function Profile() {
   const [orders, setOrders] = useState<any[]>([])
   const [unreadNotifs, setUnreadNotifs] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [editForm, setEditForm] = useState({ name: '', gender: '', major: '', qq: '', birthday: '' })
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 2000) }
 
@@ -55,9 +57,9 @@ export default function Profile() {
       reader.onload = async () => {
         const dataUrl = reader.result as string
         if (state.user) {
-          await updateProfile(state.user.id, state.user.name, dataUrl)
+          await updateProfile(state.user.id, { avatar: dataUrl })
           dispatch({ type: 'SET_USER', user: { avatar: dataUrl } })
-          showToast('✅ 头像已更新')
+          showToast('头像已更新')
         }
         setUploading(false)
       }
@@ -81,13 +83,20 @@ export default function Profile() {
 
   const user = state.user
 
-  const handleSaveName = () => {
-    if (editName.trim()) {
-      updateProfile(user.id, editName.trim()).then(() => {
-        dispatch({ type: 'SET_USER', user: { name: editName.trim() } })
-        setShowEdit(false)
-        showToast('✅ 昵称已更新')
-      }).catch((e: any) => showToast('更新失败: ' + e.message))
+  const openEdit = () => {
+    setEditForm({ name: user.name, gender: user.gender || '', major: user.major || '', qq: user.qq || '', birthday: user.birthday || '' })
+    setShowEdit(true)
+  }
+
+  const handleSaveProfile = async () => {
+    if (!editForm.name.trim()) return
+    try {
+      await updateProfile(user.id, editForm)
+      dispatch({ type: 'SET_USER', user: editForm })
+      setShowEdit(false)
+      showToast('资料已更新')
+    } catch (e: any) {
+      showToast('更新失败: ' + e.message)
     }
   }
 
@@ -115,12 +124,12 @@ export default function Profile() {
         <div className="profile-info">
           <div className="profile-name-row">
             <h2>{user.name}</h2>
-            <button className="profile-edit-btn" onClick={() => { setEditName(user.name); setShowEdit(true) }}>编辑</button>
+            <button className="profile-edit-btn" onClick={openEdit}>编辑</button>
           </div>
-          <p className="profile-meta">{user.studentId} · {user.phone}</p>
+          <p className="profile-meta">{user.studentId} · {user.phone || user.email}</p>
           <div className="profile-tags">
-            <span className="profile-tag">⭐ 信誉分 {user.creditScore}</span>
-            {user.membership !== 'none' && <span className="profile-tag">👑 会员</span>}
+            <span className="profile-tag">信誉分 {user.creditScore}</span>
+            {user.membership !== 'none' && <span className="profile-tag">会员</span>}
           </div>
         </div>
       </div>
@@ -128,15 +137,15 @@ export default function Profile() {
       <div className="profile-stats">
         <div className="profile-stat" onClick={() => navigate('/coins')}>
           <p className="profile-stat-value primary">{user.coinBalance}</p>
-          <p className="profile-stat-label">🪙 帮帮币</p>
+          <p className="profile-stat-label">帮帮币</p>
         </div>
         <div className="profile-stat" onClick={() => navigate('/membership')}>
           <p className="profile-stat-value gold">{user.membership !== 'none' ? '已开通' : '未开通'}</p>
-          <p className="profile-stat-label">👑 会员</p>
+          <p className="profile-stat-label">会员</p>
         </div>
         <div className="profile-stat" onClick={() => navigate('/notifications')}>
           <p className="profile-stat-value accent">{unreadNotifs}</p>
-          <p className="profile-stat-label">🔔 通知</p>
+          <p className="profile-stat-label">通知</p>
         </div>
       </div>
 
@@ -151,6 +160,15 @@ export default function Profile() {
             {t.label}
           </button>
         ))}
+      </div>
+
+      <div className="profile-section">
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+          {user.gender && <span className="profile-tag">{user.gender === 'male' ? '男' : user.gender === 'female' ? '女' : user.gender}</span>}
+          {user.major && <span className="profile-tag">{user.major}</span>}
+          {user.qq && <span className="profile-tag">QQ: {user.qq}</span>}
+          {user.birthday && <span className="profile-tag">生日: {user.birthday}</span>}
+        </div>
       </div>
 
       {loading ? (
@@ -170,7 +188,7 @@ export default function Profile() {
                   {userTasks.map((t: any) => (
                     <div key={t.id} className="profile-item" onClick={() => navigate(`/errand/${t.id}`)}>
                       <div className="profile-item-row">
-                        <span className="profile-item-title">🏃 {t.title}</span>
+                        <span className="profile-item-title">{t.title}</span>
                         <span className="profile-item-status" style={{ background: statusColor[t.status] || '#E3F2FD', color: statusTextColor[t.status] || 'var(--primary)' }}>
                           {statusLabel[t.status] || t.status}
                         </span>
@@ -181,7 +199,7 @@ export default function Profile() {
                   {userProducts.map((p: any) => (
                     <div key={p.id} className="profile-item">
                       <div className="profile-item-row">
-                        <span className="profile-item-title">🏪 {p.title}</span>
+                        <span className="profile-item-title">{p.title}</span>
                         <span className="profile-item-price" style={{ color: p.price === 0 ? 'var(--success)' : 'var(--accent)' }}>{p.price === 0 ? '免费' : `¥${p.price}`}</span>
                       </div>
                     </div>
@@ -239,9 +257,10 @@ export default function Profile() {
           {tab === 'settings' && (
             <div className="profile-settings">
               {[
-                { label: '个人资料', onClick: () => setShowEdit(true) },
+                { label: '个人资料', onClick: openEdit },
                 { label: '消息通知', onClick: () => navigate('/notifications') },
-                { label: '关于我们', onClick: () => showToast('外交学院一站式服务平台 v2.0') },
+                { label: '聊天消息', onClick: () => navigate('/chat') },
+                { label: '关于我们', onClick: () => setShowAbout(true) },
               ].map((item, i) => (
                 <button key={i} className="profile-setting-item" onClick={item.onClick}>
                   {item.label}
@@ -259,15 +278,27 @@ export default function Profile() {
       {showEdit && (
         <div className="profile-modal-overlay" onClick={() => setShowEdit(false)}>
           <div className="profile-modal" onClick={e => e.stopPropagation()}>
-            <h3>编辑昵称</h3>
-            <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="输入新昵称" className="profile-modal-input" />
-            <div className="profile-modal-actions">
+            <h3 style={{ marginBottom: 12 }}>编辑个人资料</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} placeholder="姓名" className="profile-modal-input" />
+              <select value={editForm.gender} onChange={e => setEditForm(f => ({ ...f, gender: e.target.value }))} className="profile-modal-input" style={{ appearance: 'auto' }}>
+                <option value="">选择性别</option>
+                <option value="male">男</option>
+                <option value="female">女</option>
+              </select>
+              <input value={editForm.major} onChange={e => setEditForm(f => ({ ...f, major: e.target.value }))} placeholder="专业" className="profile-modal-input" />
+              <input value={editForm.qq} onChange={e => setEditForm(f => ({ ...f, qq: e.target.value }))} placeholder="QQ号" className="profile-modal-input" />
+              <input value={editForm.birthday} onChange={e => setEditForm(f => ({ ...f, birthday: e.target.value }))} type="date" placeholder="出生年月" className="profile-modal-input" />
+            </div>
+            <div className="profile-modal-actions" style={{ marginTop: 12 }}>
               <button className="profile-modal-cancel" onClick={() => setShowEdit(false)}>取消</button>
-              <button className="profile-modal-save" onClick={handleSaveName}>保存</button>
+              <button className="profile-modal-save" onClick={handleSaveProfile}>保存</button>
             </div>
           </div>
         </div>
       )}
+
+      {showAbout && <About onClose={() => setShowAbout(false)} />}
 
       {toast && <div className="toast">{toast}</div>}
     </div>
