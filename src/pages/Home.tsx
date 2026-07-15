@@ -5,6 +5,7 @@ import TaskCard from '../components/TaskCard'
 import ProductCard from '../components/ProductCard'
 import { getTasks } from '../api/tasks'
 import { getProducts } from '../api/products'
+import { checkin } from '../api/user'
 
 const ADS = [
   { text: '☕ 咖啡屋 · 校内饮品8折' },
@@ -22,12 +23,32 @@ const QUICK_LINKS = [
 ]
 
 export default function Home() {
-  const { state } = useApp()
+  const { state, dispatch } = useApp()
   const navigate = useNavigate()
   const [tasks, setTasks] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [adIndex, setAdIndex] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [checkedIn, setCheckedIn] = useState(false)
+  const [checking, setChecking] = useState(false)
+  const [toast, setToast] = useState('')
+
+  const handleCheckin = async () => {
+    if (!state.user || checkedIn || checking) return
+    setChecking(true)
+    try {
+      const res = await checkin(state.user.id)
+      dispatch({ type: 'SET_USER', user: { coinBalance: (state.user?.coinBalance || 0) + res.coins } })
+      setCheckedIn(true)
+      setToast('签到成功 +1 🪙')
+      setTimeout(() => setToast(''), 2000)
+    } catch (e: any) {
+      if (e.message.includes('今天已签到')) setCheckedIn(true)
+      else setToast(e.message)
+      setTimeout(() => setToast(''), 2000)
+    }
+    setChecking(false)
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -39,6 +60,11 @@ export default function Home() {
       setProducts(Array.isArray(productsData) ? productsData : [])
       setLoading(false)
     })
+    if (state?.user) {
+      checkin(state.user.id).catch(e => {
+        if (e.message?.includes('今天已签到')) setCheckedIn(true)
+      })
+    }
   }, [])
 
   useEffect(() => {
@@ -66,6 +92,10 @@ export default function Home() {
             </button>
             {state.user && (
               <>
+                <button onClick={handleCheckin} disabled={checking || checkedIn}
+                  style={{ background: checkedIn ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.25)', padding: '4px 10px', borderRadius: 10, fontSize: 11, color: '#fff', border: 'none', cursor: 'pointer' }}>
+                  {checkedIn ? '✅ 已签到' : '📌 签到'}
+                </button>
                 <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12 }}>🪙 {state.user.coinBalance}</span>
                 {state.user.membership !== 'none' && <span style={{ background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: 10, fontSize: 11, color: '#fff' }}>👑 会员</span>}
               </>
@@ -122,6 +152,7 @@ export default function Home() {
           ))
         )}
       </div>
+      {toast && <div className="toast">{toast}</div>}
     </div>
   )
 }
