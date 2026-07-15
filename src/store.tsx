@@ -3,7 +3,8 @@ import type { ReactNode, Dispatch } from 'react'
 
 interface User {
   id: string
-  phone: string
+  phone?: string
+  email?: string
   name: string
   studentId: string
   creditScore: number

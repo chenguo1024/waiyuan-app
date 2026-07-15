@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3'
+﻿import Database from 'better-sqlite3'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
@@ -11,6 +11,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     phone TEXT UNIQUE NOT NULL,
+    email TEXT DEFAULT '',
     name TEXT DEFAULT '',
     student_id TEXT DEFAULT '',
     id_card TEXT DEFAULT '',
@@ -21,6 +22,13 @@ db.exec(`
     membership_expire_at TEXT,
     free_urgent_count INTEGER DEFAULT 0,
     avatar TEXT DEFAULT '',
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS email_codes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL,
+    code TEXT NOT NULL,
     created_at TEXT DEFAULT (datetime('now'))
   );
 
@@ -135,3 +143,4 @@ db.exec(`
 `)
 
 export default db
+
