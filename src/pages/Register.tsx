@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp, saveToken } from '../store'
-import { sendCode, sendEmailCode, register } from '../api/auth'
+import { sendCode, register } from '../api/auth'
 
 export default function Register() {
   const [step, setStep] = useState(1)
-  const [regType, setRegType] = useState<'email' | 'phone'>('email')
-  const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
@@ -21,15 +19,11 @@ export default function Register() {
   const navigate = useNavigate()
 
   const handleSendCode = async () => {
-    if (regType === 'email') {
-      if (!email.includes('@')) { setError('请输入正确的学校邮箱'); return }
-    } else {
-      if (phone.length < 11) { setError('请输入完整手机号'); return }
-    }
+    if (phone.length < 11) { setError('请输入完整手机号'); return }
     setLoading(true)
     setError('')
     try {
-      const res = regType === 'email' ? await sendEmailCode(email) : await sendCode(phone)
+      const res = await sendCode(phone)
       setCodeSent(true)
       setCountdown(60)
       const timer = setInterval(() => setCountdown(c => { if (c <= 1) clearInterval(timer); return c - 1 }), 1000)
@@ -51,11 +45,7 @@ export default function Register() {
     setLoading(true)
     setError('')
     try {
-      const params = {
-        code, password, name: name.trim(), studentId: studentId.trim(), idCard: idCard.trim(),
-        ...(regType === 'email' ? { email } : { phone }),
-      }
-      const res = await register(params)
+      const res = await register({ phone, code, password, name: name.trim(), studentId: studentId.trim(), idCard: idCard.trim() })
       saveToken(res.token)
       dispatch({ type: 'LOGIN', user: res.user })
       setStep(3)
@@ -80,26 +70,14 @@ export default function Register() {
           ))}
         </div>
 
-        <div className="auth-tabs" style={{ marginBottom: 16 }}>
-          <button className={`auth-tab ${regType === 'email' ? 'active' : ''}`} onClick={() => setRegType('email')}>邮箱注册</button>
-          <button className={`auth-tab ${regType === 'phone' ? 'active' : ''}`} onClick={() => setRegType('phone')}>手机注册</button>
-        </div>
-
         {error && <p className={`auth-error ${error.includes('验证码:') ? 'debug' : ''}`}>{error}</p>}
 
         {step === 1 && (
           <>
-            {regType === 'email' ? (
-              <div className="auth-input-group">
-                <span className="auth-input-icon">📧</span>
-                <input type="email" placeholder="学校邮箱 (@cfau.edu.cn)" value={email} onChange={e => setEmail(e.target.value.trim())} />
-              </div>
-            ) : (
-              <div className="auth-input-group">
-                <span className="auth-input-icon">📱</span>
-                <input type="tel" placeholder="手机号" value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))} />
-              </div>
-            )}
+            <div className="auth-input-group">
+              <span className="auth-input-icon">📱</span>
+              <input type="tel" placeholder="手机号" value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))} />
+            </div>
             <div className="auth-code-row">
               <div className="auth-input-group" style={{ flex: 1 }}>
                 <span className="auth-input-icon">✉️</span>
