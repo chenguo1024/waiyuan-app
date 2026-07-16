@@ -51,9 +51,8 @@ export default function PaymentModal({ amount, title, onConfirm, onClose }: Paym
           {method === 'wechat' && (
             <div style={{ textAlign: 'center', padding: 16 }}>
               <p style={{ fontSize: 12, color: 'var(--text-light)', marginBottom: 12 }}>微信扫码支付</p>
-              <div style={{ width: 200, height: 200, margin: '0 auto', background: 'var(--bg)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--text-light)' }}>
-                请替换为你的微信收款二维码图片
-              </div>
+              <img src="wechat-qr.jpg" alt="微信收款码"
+                style={{ width: 200, height: 200, objectFit: 'contain', borderRadius: 8, background: '#fff' }} />
               <p style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 8 }}>扫码完成支付后点击下方确认</p>
             </div>
           )}
