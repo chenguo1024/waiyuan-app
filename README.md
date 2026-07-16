@@ -12,10 +12,15 @@
 | **拼车出行** | 发布拼车、查看可用座位、联系方式 |
 | **帮帮币** | 充值、消费、每日签到（+1 币）、交易记录 |
 | **会员体系** | 月卡/季卡/年卡、免费紧急任务额度 |
-| **聊天** | 会话列表、实时消息（3 秒轮询）、从任务/商品页面发起 |
+| **聊天** | 会话列表、实时消息（3 秒轮询）、从任务/商品/好友页面发起 |
+| **校园墙** | 发布帖子、点赞评论、删除帖子、时间线浏览 |
+| **好友系统** | 搜索用户 ID 添加好友、接受/拒绝请求、好友列表、从好友列表发起聊天 |
+| **点赞&评论** | 支持任务、商品、校园墙帖子的点赞切换与评论互动 |
 | **个人主页** | 头像上传、信誉分、交易记录、通知中心 |
 | **个人资料** | 昵称、性别、专业、QQ、出生年月编辑 |
-| **信息流首页** | 跑腿+二手混排时间线、顶部广告轮播 |
+| **信息流首页** | 跑腿+二手混排时间线、顶部广告轮播、搜索过滤 |
+| **搜索功能** | 首页搜索栏呼出搜索遮罩，关键词过滤跑腿/商品 |
+| **微信收款** | 支付方式选择微信支付时展示收款码图片 |
 | **启动画面** | 校徽 + 校训（站稳立场·掌握政策·熟悉业务·严守纪律）渐变消失 |
 | **自动更新** | 启动检测服务端版本 → 弹窗提示 → 原生下载安装 APK |
 
@@ -62,20 +67,29 @@ D:\waiyuan-app\
 │   ├── api\                      # API 客户端
 │   │   ├── client.ts             #   请求封装（fetch + token + 错误处理）
 │   │   ├── auth.ts               #   注册、登录、验证码
-│   │   ├── tasks.ts              #   跑腿任务 CRUD
-│   │   ├── products.ts           #   二手商品 CRUD
+│   │   ├── client.ts             #   请求封装（fetch + token + 错误处理 + delete 方法）
+│   │   ├── auth.ts               #   注册、登录、验证码
+│   │   ├── tasks.ts              #   跑腿任务 CRUD + 编辑/删除
+│   │   ├── products.ts           #   二手商品 CRUD + 编辑/删除
 │   │   ├── study.ts              #   学习资源 CRUD
 │   │   ├── carpool.ts            #   拼车 CRUD
-│   │   ├── user.ts               #   用户信息、签到、订单、通知
-│   │   ├── chat.ts               #   会话、消息
-│   │   └── orders.ts             #   订单
+│   │   ├── user.ts               #   用户信息、签到、充值、会员、订单、通知
+│   │   ├── chat.ts               #   会话、消息（含 getOrCreateConversation）
+│   │   ├── orders.ts             #   订单
+│   │   ├── likes.ts              #   点赞 toggle / 状态查询
+│   │   ├── comments.ts           #   评论 CRUD
+│   │   ├── wall.ts               #   校园墙帖子 CRUD
+│   │   └── friends.ts            #   好友列表、请求、添加、接受、拒绝
 │   ├── components\               # 通用组件
 │   │   ├── Layout.tsx            #   全局布局（顶栏 + 广告 + 底部导航 + 更新提示）
-│   │   ├── BottomNav.tsx         #   底部导航栏（发布按钮居中悬浮）
-│   │   ├── TaskCard.tsx          #   跑腿任务卡片
-│   │   ├── ProductCard.tsx       #   二手商品卡片
+│   │   ├── BottomNav.tsx         #   底部导航栏（发布按钮居中悬浮，含校园墙/好友入口）
+│   │   ├── TaskCard.tsx          #   跑腿任务卡片（含编辑/删除按钮 + 点赞）
+│   │   ├── ProductCard.tsx       #   二手商品卡片（含编辑/删除按钮 + 点赞）
 │   │   ├── SplashScreen.tsx      #   启动画面组件
-│   │   └── UpdateChecker.tsx     #   版本检测 + 更新弹窗
+│   │   ├── UpdateChecker.tsx     #   版本检测 + 更新弹窗
+│   │   ├── LikeButton.tsx        #   点赞按钮（❤️ 数与状态切换）
+│   │   ├── CommentSection.tsx    #   评论列表 + 发表评论
+│   │   └── PaymentModal.tsx      #   支付弹窗（微信/支付宝，微信展示收款码）
 │   ├── pages\                    # 页面
 │   │   ├── Home.tsx              #   首页（信息流 + 签到按钮）
 │   │   ├── Login.tsx             #   手机号 + 密码登录
@@ -91,7 +105,9 @@ D:\waiyuan-app\
 │   │   ├── ChatList.tsx          #   会话列表
 │   │   ├── ChatRoom.tsx          #   聊天室
 │   │   ├── About.tsx             #   关于我们
-│   │   └── Orders.tsx            #   我的订单
+│   │   ├── Orders.tsx            #   我的订单
+│   │   ├── Wall.tsx              #   校园墙（发帖、删除、点赞评论）
+│   │   └── Friends.tsx           #   好友（搜索添加、接受拒绝、发消息）
 │   ├── plugins\                  # Capacitor 原生插件接口
 │   │   └── apk-updater.ts        #   APK 更新 TypeScript 接口
 │   ├── store.tsx                 # 全局状态（Context + Reducer）
@@ -100,13 +116,17 @@ D:\waiyuan-app\
 ├── server\                       # 后端源码
 │   ├── routes\                   # 路由模块
 │   │   ├── auth.js               #   注册、登录、验证码、绑卡
-│   │   ├── tasks.js              #   跑腿任务 CRUD + 接单
-│   │   ├── products.js           #   二手商品 CRUD
+│   │   ├── tasks.js              #   跑腿任务 CRUD + 接单 + 编辑/删除
+│   │   ├── products.js           #   二手商品 CRUD + 编辑/删除
 │   │   ├── study.js              #   学习资源 CRUD
 │   │   ├── carpool.js            #   拼车 CRUD
 │   │   ├── user.js               #   用户信息、签到、充值、会员、订单、通知
 │   │   ├── chat.js               #   会话列表、消息发送/拉取
-│   │   └── orders.js             #   订单创建/查询
+│   │   ├── orders.js             #   订单创建/查询
+│   │   ├── likes.js              #   点赞 toggle / 状态查询
+│   │   ├── comments.js           #   评论 CRUD
+│   │   ├── wall.js               #   校园墙帖子 CRUD
+│   │   └── friends.js            #   好友列表、请求、添加、接受、拒绝
 │   ├── db.js                     # SQLite 数据库初始化（所有表 DDL）
 │   ├── index.js                  # Express 入口（CORS、路由挂载、version API）
 │   ├── sms.js                    # 短信发送（阿里云 SMS SDK）
@@ -116,10 +136,10 @@ D:\waiyuan-app\
 │   │   ├── MainActivity.java     #   Android 入口 Activity
 │   │   ├── ApkUpdaterPlugin.java #   APK 下载 + 安装插件
 │   │   └── res\xml\file_paths.xml#   FileProvider 路径配置
-│   ├── app\build.gradle          #   AGP 9.0.0 / versionName 2.3.0
+│   ├── app\build.gradle          #   AGP 9.0.0 / versionName 2.4.0
 │   ├── build.gradle              #   顶层（AGP + Google Services）
 │   └── gradle\wrapper\           #   Gradle 9.6.1 wrapper
-├── package.json                  # v2.3.0
+├── package.json                  # v2.4.0
 └── vite.config.ts                # Vite 配置（SPA fallback）
 ```
 
@@ -184,7 +204,7 @@ APK 位于 `android/app/build/outputs/apk/debug/app-debug.apk`。
 ### Android 自动更新流程
 
 1. 构建新版本 APK
-2. 在 GitHub Releases 创建对应 tag（如 `v2.3.0`）并上传 APK
+2. 在 GitHub Releases 创建对应 tag（如 `v2.4.0`）并上传 APK
 3. 更新 `server/index.js` 中 `/api/version` 返回的版本号和 APK 下载链接
 4. 推送代码 → Railway 自动部署
 5. 用户打开 App → UpdateChecker 检测到版本差异 → 弹出更新提示 → 点击更新 → 原生下载安装
@@ -217,6 +237,17 @@ APK 位于 `android/app/build/outputs/apk/debug/app-debug.apk`。
 | GET | `/api/tasks` | 任务列表 |
 | POST | `/api/tasks` | 发布任务 |
 | PUT | `/api/tasks/:id` | 更新任务状态（接单、完成） |
+| PUT | `/api/tasks/:id/edit` | 编辑任务（仅发布者） |
+| DELETE | `/api/tasks/:id` | 删除任务（仅发布者） |
+
+### 商品
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/products` | 商品列表 |
+| POST | `/api/products` | 发布商品 |
+| PUT | `/api/products/:id/edit` | 编辑商品（仅发布者） |
+| DELETE | `/api/products/:id` | 删除商品（仅发布者） |
 
 ### 聊天
 
@@ -227,12 +258,60 @@ APK 位于 `android/app/build/outputs/apk/debug/app-debug.apk`。
 | GET | `/api/chat/messages/:conversationId` | 消息列表 |
 | POST | `/api/chat/messages` | 发送消息 |
 
+### 校园墙
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/wall` | 帖子列表（按时间倒序） |
+| POST | `/api/wall` | 发布帖子 |
+| DELETE | `/api/wall/:id` | 删除帖子（仅发布者） |
+
+### 好友
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/friends/list/:userId` | 好友列表 |
+| GET | `/api/friends/requests/:userId` | 好友请求列表 |
+| POST | `/api/friends/request` | 发送好友请求 |
+| POST | `/api/friends/accept` | 接受好友请求 |
+| POST | `/api/friends/reject` | 拒绝好友请求 |
+
+### 点赞
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/likes/toggle` | 切换点赞状态 |
+| GET | `/api/likes/status` | 查询点赞状态 |
+
+### 评论
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/comments/:itemType/:itemId` | 获取评论列表 |
+| POST | `/api/comments` | 发表评论 |
+| DELETE | `/api/comments/:id` | 删除评论（仅作者） |
+
+### 签到
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/user/checkin` | 每日签到 |
+| GET | `/api/checkin/status/:userId` | 查询今日是否已签到 |
+
 ### 系统
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/api/version` | 版本信息（version + apkUrl + updateUrl） |
 | GET | `/api/health` | 健康检查 |
+
+## 版本历史
+
+| 版本 | 日期 | 更新内容 |
+|------|------|----------|
+| **v2.4.0** | 2026-07-16 | 校园墙、好友系统、点赞评论、编辑/删除帖子、搜索功能、微信收款码、自适应屏幕、时间显示修复 |
+| **v2.3.0** | 2026-07-16 | 每日签到、帮帮币充值、会员体系、拼车出行、学习资源共享、即时聊天 |
+| **v2.2.0** | - | 跑腿任务、二手交易、信息流首页、自动更新 |
 
 ## 常见问题
 
