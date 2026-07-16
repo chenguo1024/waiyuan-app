@@ -1,5 +1,4 @@
 import { Router } from 'express'
-import { v4 as uuidv4 } from 'uuid'
 import crypto from 'crypto'
 import db from '../db.js'
 import sendSMS from '../sms.js'
@@ -9,6 +8,14 @@ const router = Router()
 
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password + 'waiyuan_salt_2024').digest('hex')
+}
+
+function generateUserId() {
+  while (true) {
+    const id = String(10000000 + Math.floor(Math.random() * 90000000))
+    const exists = db.prepare('SELECT id FROM users WHERE id = ?').get(id)
+    if (!exists) return id
+  }
 }
 
 function formatUser(user) {
@@ -86,7 +93,7 @@ router.post('/register', (req, res) => {
 
   if (existing) return res.status(400).json({ error: '该账号已注册' })
 
-  const id = uuidv4()
+  const id = generateUserId()
   const passwordHash = hashPassword(password)
   const displayName = name || (email ? email.split('@')[0] : `用户${phone.slice(-4)}`)
 
@@ -137,7 +144,7 @@ router.post('/login-code', (req, res) => {
 
     let user = db.prepare('SELECT * FROM users WHERE email = ?').get(email)
     if (!user) {
-      const id = uuidv4()
+      const id = generateUserId()
       const passwordHash = hashPassword(email.split('@')[0])
       db.prepare(`
         INSERT INTO users (id, email, name, password_hash, coin_balance, free_urgent_count)
@@ -156,7 +163,7 @@ router.post('/login-code', (req, res) => {
 
     let user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone)
     if (!user) {
-      const id = uuidv4()
+      const id = generateUserId()
       const passwordHash = hashPassword(phone.slice(-6))
       db.prepare(`
         INSERT INTO users (id, phone, name, password_hash, coin_balance, free_urgent_count)

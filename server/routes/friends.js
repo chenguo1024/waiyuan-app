@@ -4,6 +4,15 @@ import db from '../db.js'
 
 const router = Router()
 
+router.get('/search/:query', (req, res) => {
+  const q = req.params.query.trim()
+  if (!q) return res.json([])
+  const users = db.prepare(
+    'SELECT id, name, avatar FROM users WHERE id = ? OR phone = ? OR qq = ? LIMIT 20'
+  ).all(q, q, q)
+  res.json(users.map(u => ({ id: u.id, name: u.name, avatar: u.avatar })))
+})
+
 router.get('/:userId', (req, res) => {
   const { userId } = req.params
   const friends = db.prepare(`

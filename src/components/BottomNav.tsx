@@ -5,6 +5,7 @@ const tabs = [
   { path: '/errands', label: '跑腿', icon: '🏃' },
   { path: '/market', label: '集市', icon: '🏪' },
   { path: '/publish', label: '', icon: '➕', isCenter: true },
+  { path: '/wall', label: '校园墙', icon: '📋' },
   { path: '/study', label: '学习', icon: '📚' },
   { path: '/profile', label: '我的', icon: '👤' },
 ]
@@ -20,7 +21,7 @@ export default function BottomNav() {
 
   return (
     <div style={{
-      position: 'fixed', bottom: 0, width: '100%', maxWidth: 375, height: 64,
+      position: 'fixed', bottom: 0, width: '100%', height: 64,
       background: '#fff', display: 'flex', alignItems: 'center',
       justifyContent: 'space-around', borderTop: '1px solid var(--border)',
       zIndex: 100,

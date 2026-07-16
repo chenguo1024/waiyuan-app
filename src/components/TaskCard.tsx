@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom'
+import { useApp } from '../store'
 import type { Task } from '../types'
 import { getTaskCategoryLabel, timeAgo, formatTimeLeft } from '../mock'
+import { deleteTask } from '../api/tasks'
 
 const categoryIcons: Record<string, string> = {
   food: '🍔', print: '🖨️', delivery: '📦', other: '📋',
@@ -11,7 +13,18 @@ interface TaskCardProps {
 }
 
 export default function TaskCard({ task }: TaskCardProps) {
+  const { state } = useApp()
   const navigate = useNavigate()
+  const isOwner = state.user?.id === task.publisherId
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!confirm('确定删除此任务？')) return
+    try {
+      await deleteTask(task.id)
+      window.location.reload()
+    } catch { alert('删除失败') }
+  }
   const card = (
     <div
       onClick={() => navigate(`/errand/${task.id}`)}
@@ -74,6 +87,12 @@ export default function TaskCard({ task }: TaskCardProps) {
           <span style={{ fontSize: 11, color: 'var(--text-light)' }}>⭐{task.publisherCredit}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {isOwner && task.status === 'open' && (
+            <button onClick={handleDelete}
+              style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--danger)', color: '#fff', fontSize: 11, border: 'none' }}>
+              删除
+            </button>
+          )}
           {task.isUrgent && task.urgentDeadline && (
             <span style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600 }}>
               ⏱ {formatTimeLeft(task.urgentDeadline)}

@@ -19,3 +19,7 @@ export async function acceptFriend(userId: string, friendId: string) {
 export async function rejectFriend(userId: string, friendId: string) {
   return api.post('/friends/reject', { userId, friendId })
 }
+
+export async function searchUser(query: string) {
+  return api.get(`/friends/search/${encodeURIComponent(query)}`)
+}

@@ -1,13 +1,26 @@
 import { useNavigate } from 'react-router-dom'
+import { useApp } from '../store'
 import type { Product } from '../types'
 import { getProductCategoryLabel, getConditionLabel, timeAgo } from '../mock'
+import { deleteProduct } from '../api/products'
 
 interface ProductCardProps {
   product: Product
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const { state } = useApp()
   const navigate = useNavigate()
+  const isOwner = state.user?.id === product.sellerId
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!confirm('确定删除此商品？')) return
+    try {
+      await deleteProduct(product.id)
+      window.location.reload()
+    } catch { alert('删除失败') }
+  }
 
   const colors = ['#FFE0B2', '#C8E6C9', '#BBDEFB', '#F8BBD0']
   const color = colors[Math.floor(Math.random() * colors.length)]
@@ -78,6 +91,12 @@ export default function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            {isOwner && (
+              <button onClick={handleDelete}
+                style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--danger)', color: '#fff', fontSize: 11, border: 'none', marginRight: 4 }}>
+                删除
+              </button>
+            )}
             <div style={{
               width: 20, height: 20, borderRadius: '50%', background: 'var(--primary-light)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--primary)',

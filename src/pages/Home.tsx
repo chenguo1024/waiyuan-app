@@ -7,12 +7,6 @@ import { getTasks } from '../api/tasks'
 import { getProducts } from '../api/products'
 import { checkin, getCheckinStatus } from '../api/user'
 
-const ADS = [
-  { text: '☕ 咖啡屋 · 校内饮品8折' },
-  { text: '📚 考试周 · 打印满减优惠' },
-  { text: '🍱 食堂外卖 · 新店开业' },
-]
-
 const QUICK_LINKS = [
   { path: '/errands', label: '跑腿', icon: '🏃', color: '#1E88E5' },
   { path: '/market', label: '集市', icon: '🏪', color: '#FF7043' },
@@ -29,7 +23,6 @@ export default function Home() {
   const navigate = useNavigate()
   const [tasks, setTasks] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
-  const [adIndex, setAdIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [checkedIn, setCheckedIn] = useState(false)
   const [checking, setChecking] = useState(false)
@@ -72,11 +65,6 @@ export default function Home() {
     }
   }, [])
 
-  useEffect(() => {
-    const timer = setInterval(() => setAdIndex(i => (i + 1) % ADS.length), 3000)
-    return () => clearInterval(timer)
-  }, [])
-
   const items = [
     ...tasks.filter((t: any) => t.status === 'open' || t.status === 'in_progress')
       .map((t: any) => ({ type: 'task' as const, data: t, time: new Date(t.createdAt).getTime() })),
@@ -114,17 +102,6 @@ export default function Home() {
           <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>搜索跑腿任务、商品…</span>
         </div>
 
-        <div style={{ borderRadius: 10, overflow: 'hidden', background: 'rgba(255,255,255,0.15)', padding: '10px 14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 20 }}>{ADS[adIndex].text.split('·')[0].trim()}</span>
-            <span style={{ fontSize: 13, color: '#fff' }}>| {ADS[adIndex].text.split('·')[1]?.trim()}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginTop: 6 }}>
-            {ADS.map((_, i) => (
-              <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i === adIndex ? '#fff' : 'rgba(255,255,255,0.3)', transition: 'all 0.3s' }} />
-            ))}
-          </div>
-        </div>
       </div>
 
       <div style={{ padding: '0 12px', marginTop: -8 }}>

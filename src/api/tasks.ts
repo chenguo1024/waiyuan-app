@@ -16,3 +16,11 @@ export async function createTask(data: any) {
 export async function updateTask(id: string, data: any) {
   return api.put(`/tasks/${id}`, data)
 }
+
+export async function deleteTask(id: string) {
+  return api.delete(`/tasks/${id}`)
+}
+
+export async function editTask(id: string, data: any) {
+  return api.put(`/tasks/${id}/edit`, data)
+}

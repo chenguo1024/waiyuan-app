@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store'
-import { getFriends, getFriendRequests, requestFriend, acceptFriend, rejectFriend } from '../api/friends'
+import { getFriends, getFriendRequests, requestFriend, acceptFriend, rejectFriend, searchUser } from '../api/friends'
 import { getOrCreateConversation } from '../api/chat'
 
 export default function Friends() {
@@ -9,7 +9,9 @@ export default function Friends() {
   const navigate = useNavigate()
   const [friends, setFriends] = useState<any[]>([])
   const [requests, setRequests] = useState<any[]>([])
-  const [searchId, setSearchId] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searching, setSearching] = useState(false)
   const [toast, setToast] = useState('')
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 2000) }
@@ -22,12 +24,23 @@ export default function Friends() {
 
   useEffect(() => { load() }, [state.user])
 
-  const handleAdd = async () => {
-    if (!searchId.trim() || !state.user) return
+  const handleSearch = async () => {
+    if (!searchQuery.trim() || !state.user) return
+    setSearching(true)
     try {
-      await requestFriend(state.user.id, searchId.trim())
+      const results = await searchUser(searchQuery.trim())
+      setSearchResults(results.filter((u: any) => u.id !== state.user!.id))
+    } catch { showToast('搜索失败') }
+    setSearching(false)
+  }
+
+  const handleAdd = async (friendId: string) => {
+    if (!state.user) return
+    try {
+      await requestFriend(state.user.id, friendId)
       showToast('好友请求已发送')
-      setSearchId('')
+      setSearchResults([])
+      setSearchQuery('')
     } catch (e: any) { showToast(e.message) }
   }
 
@@ -64,13 +77,23 @@ export default function Friends() {
           <h2 style={{ fontSize: 18, fontWeight: 700 }}>好友</h2>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <input value={searchId} onChange={e => setSearchId(e.target.value)} placeholder="输入用户ID添加好友"
+          <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} placeholder="搜索用户ID / 手机号 / QQ"
             style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: 'none', fontSize: 13, outline: 'none' }} />
-          <button onClick={handleAdd} disabled={!searchId.trim()}
-            style={{ padding: '10px 20px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.25)', color: '#fff', fontWeight: 600, fontSize: 13, opacity: !searchId.trim() ? 0.5 : 1 }}>
-            添加
+          <button onClick={handleSearch} disabled={searching || !searchQuery.trim()}
+            style={{ padding: '10px 20px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.25)', color: '#fff', fontWeight: 600, fontSize: 13, opacity: !searchQuery.trim() ? 0.5 : 1 }}>
+            {searching ? '搜索中...' : '搜索'}
           </button>
         </div>
+        {searchResults.length > 0 && (
+          <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 8, marginTop: 8, padding: 8 }}>
+            {searchResults.map((u: any) => (
+              <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px' }}>
+                <span style={{ fontSize: 13 }}>{u.name || '未命名'} <span style={{ opacity: 0.6 }}>(ID: {u.id})</span></span>
+                <button onClick={() => handleAdd(u.id)} style={{ padding: '4px 12px', borderRadius: 6, background: '#fff', color: '#43A047', fontSize: 12, border: 'none', fontWeight: 600 }}>添加</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div style={{ padding: '0 12px' }}>
@@ -92,7 +115,7 @@ export default function Friends() {
         <div style={{ background: '#fff', borderRadius: 'var(--radius)', padding: 16, marginTop: 12, marginBottom: 80, boxShadow: 'var(--shadow)' }}>
           <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>好友列表 ({friends.length})</h3>
           {friends.length === 0 ? (
-            <p style={{ fontSize: 13, color: 'var(--text-light)', textAlign: 'center', padding: 20 }}>还没有好友，输入用户ID添加</p>
+            <p style={{ fontSize: 13, color: 'var(--text-light)', textAlign: 'center', padding: 20 }}>还没有好友，搜索ID/手机号/QQ添加</p>
           ) : (
             friends.map((f: any) => (
               <div key={f.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>

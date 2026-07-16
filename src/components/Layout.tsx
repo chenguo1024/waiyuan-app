@@ -1,22 +1,32 @@
-import { useLocation, Outlet, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useLocation, Outlet } from 'react-router-dom'
 import BottomNav from './BottomNav'
 import UpdateChecker from './UpdateChecker'
 
+const ADS = [
+  { text: '☕ 咖啡屋 · 校内饮品8折' },
+  { text: '📚 考试周 · 打印满减优惠' },
+  { text: '🍱 食堂外卖 · 新店开业' },
+]
+
 export default function Layout() {
   const location = useLocation()
-  const navigate = useNavigate()
+  const [adIndex, setAdIndex] = useState(0)
 
-  const adTexts = [
-    { text: '📢 新用户注册送10帮帮币', link: '/coins' },
-    { text: '💡 任务加急仅需1帮帮币', link: '/membership' },
-    { text: '🏪 闲置物品免费发布', link: '/publish' },
-  ]
-  const ad = adTexts[Math.floor(Math.random() * adTexts.length)]
+  useEffect(() => {
+    const timer = setInterval(() => setAdIndex(i => (i + 1) % ADS.length), 3000)
+    return () => clearInterval(timer)
+  }, [])
 
   return (
     <div className="app-container">
-      <div className="top-banner" onClick={() => navigate(ad.link)}>
-        <span className="top-banner-text">{ad.text}</span>
+      <div className="top-banner">
+        <span className="top-banner-text">{ADS[adIndex].text}</span>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginTop: 3 }}>
+          {ADS.map((_, i) => (
+            <div key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: i === adIndex ? 'var(--primary)' : 'rgba(30,136,229,0.2)', transition: 'all 0.3s' }} />
+          ))}
+        </div>
       </div>
       <div className="page-content" style={{ paddingTop: 4 }}>
         <div key={location.pathname} className="page-transition">
