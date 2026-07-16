@@ -206,7 +206,7 @@ db.exec(`
     created_at TEXT DEFAULT (datetime('now')),
     UNIQUE(user_id, friend_id)
   );
-')
+`)
 
 // add like_count and comment_count columns to existing tables
 try { db.exec('ALTER TABLE tasks ADD COLUMN like_count INTEGER DEFAULT 0') } catch {}
