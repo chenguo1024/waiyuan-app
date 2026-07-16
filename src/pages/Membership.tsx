@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store'
 import PaymentModal from '../components/PaymentModal'
 import { buyMembership } from '../api/user'
-import { toDate, formatDateTime } from '../mock'
+import { formatDateTime } from '../mock'
 
 export default function Membership() {
   const { state, dispatch } = useApp()
