@@ -42,8 +42,8 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/version', (req, res) => {
   res.json({
-    version: '2.3.0',
-    apkUrl: 'https://github.com/chenguo1024/waiyuan-app/releases/download/v2.3.0/app-debug.apk',
+    version: '2.4.0',
+    apkUrl: 'https://github.com/chenguo1024/waiyuan-app/releases/download/v2.4.0/app-debug.apk',
     updateUrl: 'https://github.com/chenguo1024/waiyuan-app/releases',
   })
 })
