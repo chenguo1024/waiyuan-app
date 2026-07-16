@@ -258,6 +258,8 @@ export default function Profile() {
             <div className="profile-settings">
               {[
                 { label: '个人资料', onClick: openEdit },
+                { label: '校园墙', onClick: () => navigate('/wall') },
+                { label: '好友', onClick: () => navigate('/friends') },
                 { label: '消息通知', onClick: () => navigate('/notifications') },
                 { label: '聊天消息', onClick: () => navigate('/chat') },
                 { label: '关于我们', onClick: () => setShowAbout(true) },

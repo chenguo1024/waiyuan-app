@@ -10,6 +10,10 @@ import studyRoutes from './routes/study.js'
 import carpoolRoutes from './routes/carpool.js'
 import userRoutes from './routes/user.js'
 import chatRoutes from './routes/chat.js'
+import likeRoutes from './routes/likes.js'
+import commentRoutes from './routes/comments.js'
+import wallRoutes from './routes/wall.js'
+import friendRoutes from './routes/friends.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 dotenv.config({ path: join(__dirname, '.env') })
@@ -27,6 +31,10 @@ app.use('/api/study', studyRoutes)
 app.use('/api/carpool', carpoolRoutes)
 app.use('/api/user', userRoutes)
 app.use('/api/chat', chatRoutes)
+app.use('/api/likes', likeRoutes)
+app.use('/api/comments', commentRoutes)
+app.use('/api/wall', wallRoutes)
+app.use('/api/friends', friendRoutes)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() })

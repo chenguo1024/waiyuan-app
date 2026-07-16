@@ -17,7 +17,9 @@ router.get('/', (req, res) => {
     price: p.price, originalPrice: p.original_price, condition: p.condition_text,
     isUrgent: !!p.is_urgent, sellerId: p.seller_id, sellerName: p.seller_name,
     sellerCredit: p.seller_credit, sellerPhone: p.seller_phone,
-    isSellerMember: !!p.is_seller_member, createdAt: p.created_at,
+    isSellerMember: !!p.is_seller_member,
+    likeCount: p.like_count || 0, commentCount: p.comment_count || 0,
+    createdAt: p.created_at,
   })))
 })
 
@@ -30,6 +32,26 @@ router.post('/', (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(id, category, title, description, price, condition, isUrgent ? 1 : 0, sellerId, sellerName, user?.credit_score || 100, sellerPhone || '', user?.membership !== 'none' ? 1 : 0)
   res.json({ success: true, id })
+})
+
+router.put('/:id/edit', (req, res) => {
+  const { id } = req.params
+  const { title, description, price, category, condition } = req.body
+  const product = db.prepare('SELECT * FROM products WHERE id = ?').get(id)
+  if (!product) return res.status(404).json({ error: '商品不存在' })
+  db.prepare('UPDATE products SET title = ?, description = ?, price = ?, category = ?, condition_text = ? WHERE id = ?')
+    .run(title || product.title, description !== undefined ? description : product.description, price !== undefined ? price : product.price, category || product.category, condition || product.condition_text, id)
+  res.json({ success: true })
+})
+
+router.delete('/:id', (req, res) => {
+  const { id } = req.params
+  const product = db.prepare('SELECT * FROM products WHERE id = ?').get(id)
+  if (!product) return res.status(404).json({ error: '商品不存在' })
+  db.prepare('DELETE FROM comments WHERE item_id = ? AND item_type = ?').run(id, 'product')
+  db.prepare('DELETE FROM likes WHERE item_id = ? AND item_type = ?').run(id, 'product')
+  db.prepare('DELETE FROM products WHERE id = ?').run(id)
+  res.json({ success: true })
 })
 
 export default router

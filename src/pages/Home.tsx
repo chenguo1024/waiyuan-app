@@ -16,9 +16,11 @@ const ADS = [
 const QUICK_LINKS = [
   { path: '/errands', label: '跑腿', icon: '🏃', color: '#1E88E5' },
   { path: '/market', label: '集市', icon: '🏪', color: '#FF7043' },
+  { path: '/wall', label: '校园墙', icon: '📋', color: '#8E24AA' },
   { path: '/study', label: '学习', icon: '📚', color: '#4CAF50' },
   { path: '/carpool', label: '拼车', icon: '🚗', color: '#9C27B0' },
   { path: '/coins', label: '帮帮币', icon: '🪙', color: '#FFA000' },
+  { path: '/friends', label: '好友', icon: '👥', color: '#43A047' },
   { path: '/publish', label: '发布', icon: '➕', color: '#F44336' },
 ]
 

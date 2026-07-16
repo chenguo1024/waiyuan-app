@@ -15,3 +15,7 @@ export async function sendMessage(senderId: string, receiverId: string, content:
 export async function markConversationRead(conversationId: string, userId: string) {
   return api.put(`/chat/conversations/${conversationId}/read`, { userId })
 }
+
+export async function getOrCreateConversation(userId: string, otherUserId: string) {
+  return api.post('/chat/conversations', { userId, otherUserId })
+}

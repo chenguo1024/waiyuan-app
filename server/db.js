@@ -167,7 +167,52 @@ db.exec(`
     content TEXT NOT NULL,
     created_at TEXT DEFAULT (datetime('now'))
   );
-`)
+
+  CREATE TABLE IF NOT EXISTS likes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    item_id TEXT NOT NULL,
+    item_type TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(user_id, item_id, item_type)
+  );
+
+  CREATE TABLE IF NOT EXISTS comments (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    user_name TEXT DEFAULT '',
+    item_id TEXT NOT NULL,
+    item_type TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS wall_posts (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    user_name TEXT DEFAULT '',
+    content TEXT NOT NULL,
+    images TEXT DEFAULT '',
+    like_count INTEGER DEFAULT 0,
+    comment_count INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS friends (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    friend_id TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    created_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(user_id, friend_id)
+  );
+')
+
+// add like_count and comment_count columns to existing tables
+try { db.exec('ALTER TABLE tasks ADD COLUMN like_count INTEGER DEFAULT 0') } catch {}
+try { db.exec('ALTER TABLE tasks ADD COLUMN comment_count INTEGER DEFAULT 0') } catch {}
+try { db.exec('ALTER TABLE products ADD COLUMN like_count INTEGER DEFAULT 0') } catch {}
+try { db.exec('ALTER TABLE products ADD COLUMN comment_count INTEGER DEFAULT 0') } catch {}
 
 export default db
 

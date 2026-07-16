@@ -22,6 +22,7 @@ router.get('/', (req, res) => {
     publisherId: t.publisher_id, publisherName: t.publisher_name,
     publisherCredit: t.publisher_credit, isPublisherMember: !!t.is_publisher_member,
     acceptedBy: t.accepted_by, acceptedByName: t.accepted_name,
+    likeCount: t.like_count || 0, commentCount: t.comment_count || 0,
     createdAt: t.created_at,
   })))
 })
@@ -35,6 +36,28 @@ router.post('/', (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(id, category, title, description, pickupLocation, deliveryLocation, reward, isUrgent ? 1 : 0, urgentFee || 0, urgentDeadline || null, publisherId, publisherName, user?.credit_score || 100, user?.membership !== 'none' ? 1 : 0)
   res.json({ success: true, id })
+})
+
+router.put('/:id/edit', (req, res) => {
+  const { id } = req.params
+  const { title, description, reward, category } = req.body
+  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id)
+  if (!task) return res.status(404).json({ error: '任务不存在' })
+  if (task.status !== 'open') return res.status(400).json({ error: '只能修改进行中的任务' })
+  db.prepare('UPDATE tasks SET title = ?, description = ?, reward = ?, category = ? WHERE id = ?')
+    .run(title || task.title, description !== undefined ? description : task.description, reward !== undefined ? reward : task.reward, category || task.category, id)
+  res.json({ success: true })
+})
+
+router.delete('/:id', (req, res) => {
+  const { id } = req.params
+  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id)
+  if (!task) return res.status(404).json({ error: '任务不存在' })
+  if (task.status !== 'open') return res.status(400).json({ error: '只能删除未接单的任务' })
+  db.prepare('DELETE FROM comments WHERE item_id = ? AND item_type = ?').run(id, 'task')
+  db.prepare('DELETE FROM likes WHERE item_id = ? AND item_type = ?').run(id, 'task')
+  db.prepare('DELETE FROM tasks WHERE id = ?').run(id)
+  res.json({ success: true })
 })
 
 router.put('/:id', (req, res) => {

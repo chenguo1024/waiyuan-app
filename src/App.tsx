@@ -19,6 +19,8 @@ import Profile from './pages/Profile'
 import Notifications from './pages/Notifications'
 import ChatList from './pages/ChatList'
 import ChatRoom from './pages/ChatRoom'
+import Wall from './pages/Wall'
+import Friends from './pages/Friends'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { state } = useApp()
@@ -49,6 +51,8 @@ function AppRoutes() {
           <Route path="notifications" element={<Notifications />} />
           <Route path="chat" element={<ChatList />} />
           <Route path="chat/:id" element={<ChatRoom />} />
+          <Route path="wall" element={<Wall />} />
+          <Route path="friends" element={<Friends />} />
         </Route>
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
