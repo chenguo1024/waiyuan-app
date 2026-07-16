@@ -24,6 +24,10 @@ export async function checkin(userId: string) {
   return api.post('/user/checkin', { userId })
 }
 
+export async function getCheckinStatus(userId: string) {
+  return api.get(`/user/checkin/status/${userId}`)
+}
+
 export async function recharge(userId: string, amount: number) {
   return api.post('/user/recharge', { userId, amount })
 }

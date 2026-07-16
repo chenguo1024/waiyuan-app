@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store'
 import TaskCard from '../components/TaskCard'
 import ProductCard from '../components/ProductCard'
 import { getTasks } from '../api/tasks'
 import { getProducts } from '../api/products'
-import { checkin } from '../api/user'
+import { checkin, getCheckinStatus } from '../api/user'
 
 const ADS = [
   { text: '☕ 咖啡屋 · 校内饮品8折' },
@@ -32,13 +32,16 @@ export default function Home() {
   const [checkedIn, setCheckedIn] = useState(false)
   const [checking, setChecking] = useState(false)
   const [toast, setToast] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showSearch, setShowSearch] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const handleCheckin = async () => {
     if (!state.user || checkedIn || checking) return
     setChecking(true)
     try {
       const res = await checkin(state.user.id)
-      dispatch({ type: 'SET_USER', user: { coinBalance: (state.user?.coinBalance || 0) + res.coins } })
+      dispatch({ type: 'SET_USER', user: { ...state.user, coinBalance: (state.user?.coinBalance || 0) + res.coins } })
       setCheckedIn(true)
       setToast('签到成功 +1 🪙')
       setTimeout(() => setToast(''), 2000)
@@ -61,9 +64,9 @@ export default function Home() {
       setLoading(false)
     })
     if (state?.user) {
-      checkin(state.user.id).catch(e => {
-        if (e.message?.includes('今天已签到')) setCheckedIn(true)
-      })
+      getCheckinStatus(state.user.id).then(data => {
+        if (data.checkedIn) setCheckedIn(true)
+      }).catch(() => {})
     }
   }, [])
 
@@ -103,7 +106,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}
+          onClick={() => { setShowSearch(true); setTimeout(() => searchInputRef.current?.focus(), 100) }}>
           <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>🔍</span>
           <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>搜索跑腿任务、商品…</span>
         </div>
@@ -153,6 +157,32 @@ export default function Home() {
         )}
       </div>
       {toast && <div className="toast">{toast}</div>}
+
+      {showSearch && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#fff', zIndex: 9999, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', gap: 8, borderBottom: '1px solid var(--border)' }}>
+            <button onClick={() => setShowSearch(false)} style={{ background: 'none', fontSize: 16, padding: '4px 8px' }}>←</button>
+            <input ref={searchInputRef} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="搜索跑腿任务、商品…"
+              style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: 'none', background: 'var(--bg)', fontSize: 14, outline: 'none' }}
+              autoFocus />
+          </div>
+          <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
+            {searchQuery.trim() ? (
+              items.filter(i => (i.type === 'task' ? i.data.title : i.data.title).toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+                <p style={{ textAlign: 'center', padding: 40, color: 'var(--text-light)', fontSize: 14 }}>未找到相关内容</p>
+              ) : (
+                items.filter(i => (i.type === 'task' ? i.data.title : i.data.title).toLowerCase().includes(searchQuery.toLowerCase())).map(item => (
+                  item.type === 'task'
+                    ? <TaskCard key={'t' + item.data.id} task={item.data} />
+                    : <ProductCard key={'p' + item.data.id} product={item.data} />
+                ))
+              )
+            ) : (
+              <p style={{ textAlign: 'center', padding: 40, color: 'var(--text-light)', fontSize: 14 }}>输入关键词搜索跑腿任务和商品</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

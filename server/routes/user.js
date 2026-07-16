@@ -47,17 +47,33 @@ router.put('/notifications/:id/read', (req, res) => {
   res.json({ success: true })
 })
 
+// 签到状态
+router.get('/checkin/status/:userId', (req, res) => {
+  const { userId } = req.params
+  if (!userId) return res.status(400).json({ error: '缺少用户ID' })
+  const today = new Date().toISOString().slice(0, 10)
+  const existing = db.prepare('SELECT id FROM checkins WHERE user_id = ? AND date = ?').get(userId, today)
+  res.json({ checkedIn: !!existing })
+})
+
 // 每日签到
 router.post('/checkin', (req, res) => {
   const { userId } = req.body
+  if (!userId) return res.status(400).json({ error: '缺少用户ID' })
   const today = new Date().toISOString().slice(0, 10)
-  const existing = db.prepare('SELECT id FROM checkins WHERE user_id = ? AND date = ?').get(userId, today)
-  if (existing) return res.status(400).json({ error: '今天已签到' })
 
-  db.prepare('INSERT INTO checkins (id, user_id, date) VALUES (?, ?, ?)').run(uuidv4(), userId, today)
-  db.prepare('UPDATE users SET coin_balance = coin_balance + 1 WHERE id = ?').run(userId)
-  db.prepare("INSERT INTO transactions (id, user_id, type, amount, description) VALUES (?, ?, 'earn', 1, '每日签到')")
-    .run(uuidv4(), userId)
+  const doCheckin = db.transaction(() => {
+    const existing = db.prepare('SELECT id FROM checkins WHERE user_id = ? AND date = ?').get(userId, today)
+    if (existing) return '今天已签到'
+    db.prepare('INSERT INTO checkins (user_id, date) VALUES (?, ?)').run(userId, today)
+    db.prepare('UPDATE users SET coin_balance = coin_balance + 1 WHERE id = ?').run(userId)
+    db.prepare("INSERT INTO transactions (id, user_id, type, amount, description) VALUES (?, ?, 'earn', 1, '每日签到')")
+      .run(uuidv4(), userId)
+    return null
+  })
+
+  const err = doCheckin()
+  if (err) return res.status(400).json({ error: err })
   res.json({ success: true, coins: 1 })
 })
 

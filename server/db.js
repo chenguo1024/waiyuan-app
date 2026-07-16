@@ -145,7 +145,8 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
     date TEXT NOT NULL,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(user_id, date)
   );
 
   CREATE TABLE IF NOT EXISTS conversations (

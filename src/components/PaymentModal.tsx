@@ -22,8 +22,8 @@ export default function PaymentModal({ amount, title, onConfirm, onClose }: Paym
     >
       <div
         style={{
-          width: 320, background: '#fff', borderRadius: 16, padding: 24,
-          animation: 'slideUp 0.3s ease',
+          width: 340, background: '#fff', borderRadius: 16, padding: 24,
+          animation: 'slideUp 0.3s ease', maxHeight: '90vh', overflow: 'auto',
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -47,6 +47,17 @@ export default function PaymentModal({ amount, title, onConfirm, onClose }: Paym
             <span style={{ flex: 1, textAlign: 'left', fontSize: 14 }}>微信支付</span>
             {method === 'wechat' && <span style={{ color: 'var(--success)' }}>✓</span>}
           </button>
+
+          {method === 'wechat' && (
+            <div style={{ textAlign: 'center', padding: 16 }}>
+              <p style={{ fontSize: 12, color: 'var(--text-light)', marginBottom: 12 }}>微信扫码支付</p>
+              <div style={{ width: 200, height: 200, margin: '0 auto', background: 'var(--bg)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--text-light)' }}>
+                请替换为你的微信收款二维码图片
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 8 }}>扫码完成支付后点击下方确认</p>
+            </div>
+          )}
+
           <button
             onClick={() => setMethod('coins')}
             style={{
@@ -78,7 +89,7 @@ export default function PaymentModal({ amount, title, onConfirm, onClose }: Paym
               color: '#fff', fontSize: 15, fontWeight: 600,
             }}
           >
-            确认支付
+            {method === 'wechat' ? '我已支付' : '确认支付'}
           </button>
         </div>
       </div>
