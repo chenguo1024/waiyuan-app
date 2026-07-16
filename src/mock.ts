@@ -18,8 +18,13 @@ export function getStudyTypeLabel(t: string): string {
   return m[t] || t
 }
 
+export function toDate(d: string) {
+  const t = d.includes('T') || d.includes('Z') ? d : d + 'Z'
+  return new Date(t)
+}
+
 export function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
+  const diff = Date.now() - toDate(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
   if (mins < 1) return '刚刚'
   if (mins < 60) return `${mins}分钟前`
@@ -27,11 +32,12 @@ export function timeAgo(dateStr: string): string {
   if (hours < 24) return `${hours}小时前`
   const days = Math.floor(hours / 24)
   if (days < 30) return `${days}天前`
-  return `${Math.floor(days / 30)}个月前`
+  if (days < 365) return `${Math.floor(days / 30)}个月前`
+  return `${Math.floor(days / 365)}年前`
 }
 
 export function formatTimeLeft(deadline: string): string {
-  const diff = new Date(deadline).getTime() - Date.now()
+  const diff = toDate(deadline).getTime() - Date.now()
   if (diff <= 0) return '已截止'
   const mins = Math.floor(diff / 60000)
   if (mins < 60) return `${mins}分钟`
@@ -41,6 +47,6 @@ export function formatTimeLeft(deadline: string): string {
 }
 
 export function formatDateTime(dateStr: string): string {
-  const d = new Date(dateStr)
+  const d = toDate(dateStr)
   return `${d.getMonth() + 1}月${d.getDate()}日 ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
 }

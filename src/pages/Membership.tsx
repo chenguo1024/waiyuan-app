@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store'
 import PaymentModal from '../components/PaymentModal'
 import { buyMembership } from '../api/user'
+import { toDate, formatDateTime } from '../mock'
 
 export default function Membership() {
   const { state, dispatch } = useApp()
@@ -47,7 +48,7 @@ export default function Membership() {
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, marginBottom: 4 }}>
               <span style={{ fontWeight: 600 }}>{isMember ? `${state.user.name} · ${state.user.membership === 'monthly' ? '月卡' : '学期卡'}会员` : `${state.user.name} · 未开通会员`}</span>
             </div>
-            {isMember && state.user.membershipExpireAt && <span style={{ fontSize: 12, opacity: 0.8 }}>到期：{new Date(state.user.membershipExpireAt).toLocaleDateString('zh-CN')}</span>}
+            {isMember && state.user.membershipExpireAt && <span style={{ fontSize: 12, opacity: 0.8 }}>到期：{formatDateTime(state.user.membershipExpireAt)}</span>}
             <div style={{ marginTop: 8, fontSize: 12, opacity: 0.9 }}>🆓 剩余免费加急：{state.user.freeUrgentCount}次</div>
           </div>
         )}

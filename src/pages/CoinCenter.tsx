@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store'
 import PaymentModal from '../components/PaymentModal'
 import { checkin, recharge, getTransactions } from '../api/user'
+import { timeAgo } from '../mock'
 
 const RECHARGE_OPTIONS = [
   { amount: 10, coins: 100, bonus: 0 },
@@ -148,7 +149,7 @@ export default function CoinCenter() {
                 <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                   <div>
                     <p style={{ fontSize: 13 }}>{t.description}</p>
-                    <p style={{ fontSize: 11, color: 'var(--text-light)' }}>{new Date(t.createdAt).toLocaleDateString('zh-CN')}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text-light)' }}>{timeAgo(t.createdAt)}</p>
                   </div>
                   <span style={{ fontSize: 15, fontWeight: 600, color: t.type === 'earn' || t.type === 'recharge' ? 'var(--success)' : 'var(--danger)' }}>
                     {t.type === 'earn' || t.type === 'recharge' ? '+' : '-'}{t.amount}

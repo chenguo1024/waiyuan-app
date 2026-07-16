@@ -3,6 +3,7 @@ import { useApp } from '../store'
 import { getWallPosts, createWallPost, deleteWallPost } from '../api/wall'
 import LikeButton from '../components/LikeButton'
 import CommentSection from '../components/CommentSection'
+import { timeAgo } from '../mock'
 import { useNavigate } from 'react-router-dom'
 
 export default function Wall() {
@@ -68,7 +69,7 @@ export default function Wall() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{post.userName}</span>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: 'var(--text-light)' }}>{new Date(post.createdAt).toLocaleDateString('zh-CN')}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-light)' }}>{timeAgo(post.createdAt)}</span>
                   {state.user?.id === post.userId && (
                     <button onClick={() => handleDelete(post.id)} style={{ background: 'none', fontSize: 12, color: 'var(--danger)' }}>删除</button>
                   )}
