@@ -3,6 +3,9 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
 import { useApp } from '../store'
 import { getMessages, sendMessage, markConversationRead } from '../api/chat'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+const SERVER_BASE = API_BASE.replace('/api', '')
+
 export default function ChatRoom() {
   const { id } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()
@@ -16,6 +19,7 @@ export default function ChatRoom() {
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!id || !state.user) return
@@ -49,6 +53,24 @@ export default function ChatRoom() {
     setSending(false)
   }
 
+  const handleSendImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !state.user || !otherId) return
+    setSending(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const uploadRes = await fetch(`${SERVER_BASE}/api/upload`, { method: 'POST', body: formData })
+      const uploadData = await uploadRes.json()
+      if (!uploadRes.ok) throw new Error(uploadData.error)
+      await sendMessage(state.user.id, otherId, uploadData.url, 'image')
+      const data = await getMessages(id!)
+      setMessages(Array.isArray(data) ? data : [])
+    } catch { alert('发送图片失败') }
+    setSending(false)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
   if (!state.user) {
     return <div className="page-animate" style={{ padding: 40, textAlign: 'center', color: 'var(--text-light)' }}>请先登录</div>
   }
@@ -72,7 +94,12 @@ export default function ChatRoom() {
             const isMe = m.senderId === state.user!.id
             return (
               <div key={m.id} className={`chat-bubble ${isMe ? 'me' : 'other'}`}>
-                <div className={`chat-bubble-content ${isMe ? 'me' : 'other'}`}>{m.content}</div>
+                {m.type === 'image' ? (
+                  <img src={m.content.startsWith('http') ? m.content : `${SERVER_BASE}${m.content}`} alt="图片"
+                    style={{ maxWidth: 200, maxHeight: 200, borderRadius: 12, display: 'block' }} />
+                ) : (
+                  <div className={`chat-bubble-content ${isMe ? 'me' : 'other'}`}>{m.content}</div>
+                )}
                 <div className="chat-bubble-time">{new Date(m.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div>
               </div>
             )
@@ -82,6 +109,12 @@ export default function ChatRoom() {
       </div>
 
       <div className="chat-room-input">
+        <input
+          type="file" ref={fileRef} accept="image/*" style={{ display: 'none' }}
+          onChange={handleSendImage} />
+        <button onClick={() => fileRef.current?.click()} style={{ background: 'none', fontSize: 22, padding: '0 4px', cursor: 'pointer' }}>
+          🖼️
+        </button>
         <input
           value={text}
           onChange={e => setText(e.target.value)}

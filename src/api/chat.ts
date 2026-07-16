@@ -8,8 +8,8 @@ export async function getMessages(conversationId: string) {
   return api.get(`/chat/messages/${conversationId}`)
 }
 
-export async function sendMessage(senderId: string, receiverId: string, content: string) {
-  return api.post('/chat/messages', { senderId, receiverId, content })
+export async function sendMessage(senderId: string, receiverId: string, content: string, type?: string) {
+  return api.post('/chat/messages', { senderId, receiverId, content, type })
 }
 
 export async function markConversationRead(conversationId: string, userId: string) {

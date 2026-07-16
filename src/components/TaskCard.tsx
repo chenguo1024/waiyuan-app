@@ -10,9 +10,10 @@ const categoryIcons: Record<string, string> = {
 
 interface TaskCardProps {
   task: Task
+  onDelete?: (id: string) => void
 }
 
-export default function TaskCard({ task }: TaskCardProps) {
+export default function TaskCard({ task, onDelete }: TaskCardProps) {
   const { state } = useApp()
   const navigate = useNavigate()
   const isOwner = state.user?.id === task.publisherId
@@ -22,7 +23,7 @@ export default function TaskCard({ task }: TaskCardProps) {
     if (!confirm('确定删除此任务？')) return
     try {
       await deleteTask(task.id)
-      window.location.reload()
+      onDelete?.(task.id)
     } catch { alert('删除失败') }
   }
   const card = (

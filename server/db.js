@@ -168,6 +168,15 @@ db.exec(`
     created_at TEXT DEFAULT (datetime('now'))
   );
 
+  CREATE TABLE IF NOT EXISTS messages_v2 (
+    id TEXT PRIMARY KEY, conversation_id TEXT NOT NULL, sender_id TEXT NOT NULL,
+    content TEXT NOT NULL, type TEXT DEFAULT 'text', created_at TEXT DEFAULT (datetime('now'))
+  );
+  INSERT OR IGNORE INTO messages_v2 SELECT id, conversation_id, sender_id, content, 'text' as type, created_at FROM messages;
+  DROP TABLE IF EXISTS messages_old;
+  ALTER TABLE messages RENAME TO messages_old;
+  ALTER TABLE messages_v2 RENAME TO messages;
+
   CREATE TABLE IF NOT EXISTS likes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,

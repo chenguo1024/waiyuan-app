@@ -6,9 +6,10 @@ import { deleteProduct } from '../api/products'
 
 interface ProductCardProps {
   product: Product
+  onDelete?: (id: string) => void
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, onDelete }: ProductCardProps) {
   const { state } = useApp()
   const navigate = useNavigate()
   const isOwner = state.user?.id === product.sellerId
@@ -18,7 +19,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     if (!confirm('确定删除此商品？')) return
     try {
       await deleteProduct(product.id)
-      window.location.reload()
+      onDelete?.(product.id)
     } catch { alert('删除失败') }
   }
 

@@ -48,7 +48,7 @@ export default function Home() {
     setChecking(false)
   }
 
-  useEffect(() => {
+  const loadData = () => {
     setLoading(true)
     Promise.all([
       getTasks().catch(() => []),
@@ -58,6 +58,10 @@ export default function Home() {
       setProducts(Array.isArray(productsData) ? productsData : [])
       setLoading(false)
     })
+  }
+
+  useEffect(() => {
+    loadData()
     if (state?.user) {
       getCheckinStatus(state.user.id).then(data => {
         if (data.checkedIn) setCheckedIn(true)
@@ -130,8 +134,8 @@ export default function Home() {
         ) : (
           items.map(item => (
             item.type === 'task'
-              ? <TaskCard key={'t' + item.data.id} task={item.data} />
-              : <ProductCard key={'p' + item.data.id} product={item.data} />
+              ? <TaskCard key={'t' + item.data.id} task={item.data} onDelete={loadData} />
+              : <ProductCard key={'p' + item.data.id} product={item.data} onDelete={loadData} />
           ))
         )}
       </div>
@@ -152,8 +156,8 @@ export default function Home() {
               ) : (
                 items.filter(i => (i.type === 'task' ? i.data.title : i.data.title).toLowerCase().includes(searchQuery.toLowerCase())).map(item => (
                   item.type === 'task'
-                    ? <TaskCard key={'t' + item.data.id} task={item.data} />
-                    : <ProductCard key={'p' + item.data.id} product={item.data} />
+                    ? <TaskCard key={'t' + item.data.id} task={item.data} onDelete={loadData} />
+                    : <ProductCard key={'p' + item.data.id} product={item.data} onDelete={loadData} />
                 ))
               )
             ) : (

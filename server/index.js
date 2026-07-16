@@ -1,5 +1,7 @@
 import express from 'express'
 import cors from 'cors'
+import multer from 'multer'
+import { v4 as uuidv4 } from 'uuid'
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
@@ -23,6 +25,23 @@ const PORT = process.env.PORT || 3001
 
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
+
+const uploadDir = join(__dirname, 'uploads')
+import { mkdirSync, existsSync } from 'fs'
+if (!existsSync(uploadDir)) mkdirSync(uploadDir, { recursive: true })
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => cb(null, `${uuidv4()}${file.originalname.match(/\.\w+$/)?.[0] || '.jpg'}`),
+})
+const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } })
+
+app.use('/uploads', express.static(uploadDir))
+
+app.post('/api/upload', upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: '请选择文件' })
+  res.json({ url: `/uploads/${req.file.filename}` })
+})
 
 app.use('/api/auth', authRoutes)
 app.use('/api/tasks', taskRoutes)

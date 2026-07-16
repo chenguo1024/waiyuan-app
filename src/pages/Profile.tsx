@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store'
-import { getTasks } from '../api/tasks'
-import { getProducts } from '../api/products'
+import { getTasks, deleteTask } from '../api/tasks'
+import { getProducts, deleteProduct } from '../api/products'
 import { getOrders, getNotifications, updateProfile } from '../api/user'
 import About from './About'
 
@@ -27,7 +27,7 @@ export default function Profile() {
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 2000) }
 
-  useEffect(() => {
+  const loadProfileData = () => {
     if (!state.user) return
     setLoading(true)
     const userId = state.user.id
@@ -46,7 +46,19 @@ export default function Profile() {
       setUnreadNotifs(ns.filter((n: any) => !n.read).length)
       setLoading(false)
     }).catch(() => setLoading(false))
-  }, [state.user])
+  }
+
+  useEffect(() => { loadProfileData() }, [state.user])
+
+  const handleDeleteTask = async (id: string) => {
+    if (!confirm('确定删除此任务？')) return
+    try { await deleteTask(id); loadProfileData() } catch { showToast('删除失败') }
+  }
+
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm('确定删除此商品？')) return
+    try { await deleteProduct(id); loadProfileData() } catch { showToast('删除失败') }
+  }
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -188,7 +200,15 @@ export default function Profile() {
                   {userTasks.map((t: any) => (
                     <div key={t.id} className="profile-item" onClick={() => navigate(`/errand/${t.id}`)}>
                       <div className="profile-item-row">
-                        <span className="profile-item-title">{t.title}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                          <span className="profile-item-title">{t.title}</span>
+                          {t.status === 'open' && (
+                            <button onClick={e => { e.stopPropagation(); handleDeleteTask(t.id) }}
+                              style={{ padding: '2px 8px', borderRadius: 4, background: 'var(--danger)', color: '#fff', fontSize: 10, border: 'none' }}>
+                              删除
+                            </button>
+                          )}
+                        </div>
                         <span className="profile-item-status" style={{ background: statusColor[t.status] || '#E3F2FD', color: statusTextColor[t.status] || 'var(--primary)' }}>
                           {statusLabel[t.status] || t.status}
                         </span>
@@ -199,7 +219,13 @@ export default function Profile() {
                   {userProducts.map((p: any) => (
                     <div key={p.id} className="profile-item">
                       <div className="profile-item-row">
-                        <span className="profile-item-title">{p.title}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                          <span className="profile-item-title">{p.title}</span>
+                          <button onClick={e => { e.stopPropagation(); handleDeleteProduct(p.id) }}
+                            style={{ padding: '2px 8px', borderRadius: 4, background: 'var(--danger)', color: '#fff', fontSize: 10, border: 'none' }}>
+                            删除
+                          </button>
+                        </div>
                         <span className="profile-item-price" style={{ color: p.price === 0 ? 'var(--success)' : 'var(--accent)' }}>{p.price === 0 ? '免费' : `¥${p.price}`}</span>
                       </div>
                     </div>

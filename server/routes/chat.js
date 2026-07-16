@@ -27,12 +27,12 @@ router.get('/conversations/:userId', (req, res) => {
 router.get('/messages/:conversationId', (req, res) => {
   const msgs = db.prepare('SELECT * FROM messages WHERE conversation_id = ? ORDER BY created_at ASC').all(req.params.conversationId)
   res.json(msgs.map(m => ({
-    id: m.id, senderId: m.sender_id, content: m.content, createdAt: m.created_at,
+    id: m.id, senderId: m.sender_id, content: m.content, type: m.type || 'text', createdAt: m.created_at,
   })))
 })
 
 router.post('/messages', (req, res) => {
-  const { senderId, receiverId, content } = req.body
+  const { senderId, receiverId, content, type } = req.body
   if (!senderId || !receiverId || !content) {
     return res.status(400).json({ error: '缺少参数' })
   }
@@ -51,17 +51,19 @@ router.post('/messages', (req, res) => {
     ).run(convo.id, convo.user1_id, convo.user2_id)
   }
 
+  const msgType = type || 'text'
   const msgId = uuidv4()
   db.prepare(
-    'INSERT INTO messages (id, conversation_id, sender_id, content) VALUES (?, ?, ?, ?)'
-  ).run(msgId, convo.id, senderId, content)
+    'INSERT INTO messages (id, conversation_id, sender_id, content, type) VALUES (?, ?, ?, ?, ?)'
+  ).run(msgId, convo.id, senderId, content, msgType)
 
   const unreadField = senderId === convo.user1_id ? 'unread_user2' : 'unread_user1'
+  const lastMsg = msgType === 'image' ? '[图片]' : msgType === 'voice' ? '[语音]' : content
   db.prepare(
     `UPDATE conversations SET last_message = ?, last_message_at = datetime('now'), ${unreadField} = ${unreadField} + 1 WHERE id = ?`
-  ).run(content, convo.id)
+  ).run(lastMsg, convo.id)
 
-  res.json({ success: true, message: { id: msgId, senderId, content, createdAt: new Date().toISOString() } })
+  res.json({ success: true, message: { id: msgId, senderId, content, type: msgType, createdAt: new Date().toISOString() } })
 })
 
 router.put('/conversations/:id/read', (req, res) => {
